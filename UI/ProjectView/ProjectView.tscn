@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://ca01t51ejugu"]
+
+[ext_resource type="PackedScene" uid="uid://5be8g4twjf8q" path="res://UI/FileExplorer/FileExplorer.tscn" id="1_d8ooi"]
+
+[node name="ProjectView" type="HBoxContainer"]
+
+[node name="ProjectFiles" parent="." instance=ExtResource("1_d8ooi")]
+layout_mode = 2
