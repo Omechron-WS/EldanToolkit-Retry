@@ -158,7 +158,7 @@ namespace EldanToolkit.Project
             var files = GetAllProjectFiles(projectFilesPath);
             foreach(var file in files)
             {
-                string relativePath = Path.GetRelativePath(file, projectFilesPath).Replace('\\', '/');
+                string relativePath = Path.GetRelativePath(projectFilesPath, file).Replace('\\', '/');
                 byte[] bytes = File.ReadAllBytes(file);
                 fs.Write(relativePath, bytes, DateTime.Now);
             }
