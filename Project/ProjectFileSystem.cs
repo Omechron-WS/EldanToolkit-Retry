@@ -1,6 +1,7 @@
 ﻿using Godot;
 using LibNexus.Core;
 using LibNexus.Files;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,14 +14,12 @@ namespace EldanToolkit.Project
     {
         FileSystem fs = null;
         Task<FileSystem> task = null;
-        CancellationTokenSource cts;
         Progress progress;
 
-        public ArchiveFilePair(string index, bool hasArchive)
+        public ArchiveFilePair(string index, bool hasArchive, CancellationToken token)
         {
-            cts = new CancellationTokenSource();
             progress = new Progress();
-            task = FileSystem.Create(progress, index, hasArchive, null, cts.Token);
+            task = FileSystem.Create(progress, index, hasArchive, null, token);
         }
 
         public FileSystem GetFileSystem()
@@ -41,6 +40,8 @@ namespace EldanToolkit.Project
         [Export(PropertyHint.GlobalDir)]
         public string projectPath;
 
+        public string projectFilesPath { get { return Path.Combine(projectPath, "ProjectFiles"); } }
+
         [Export(PropertyHint.GlobalDir)]
         public string ArchivePath
         {
@@ -53,32 +54,36 @@ namespace EldanToolkit.Project
                 if (archivePath != value)
                 {
                     archivePath = value;
-                    ReadArchive();
+                    if (!Engine.IsEditorHint())
+                    {
+                        ReadArchive();
+                    }
                 }
             }
         }
 
         private string archivePath;
         private List<ArchiveFilePair> archiveFiles = new List<ArchiveFilePair>();
+        CancellationTokenSource cts = new CancellationTokenSource();
 
         private void ReadArchive()
         {
             archiveFiles.Clear();
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true));
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true));
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Path"), false));
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Client64"), false));
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true, cts.Token));
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true, cts.Token));
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Path"), false, cts.Token));
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Client64"), false, cts.Token));
         }
 
         public SortedSet<string> GetFilesInFolder(string path)
         {
             SortedSet<string> files = new SortedSet<string>();
-            if (projectPath != null)
+            if (projectFilesPath != null)
             {
-                string fullPath = Path.Combine(projectPath, path);
+                string fullPath = Path.Combine(projectFilesPath, path);
                 if (Directory.Exists(fullPath))
                 {
-                    files.UnionWith(Directory.GetFiles(Path.Combine(projectPath, path)).Select((p) => Path.GetFileName(p)));
+                    files.UnionWith(Directory.GetFiles(Path.Combine(projectFilesPath, path)).Select((p) => Path.GetFileName(p)));
                 }
             }
             foreach(var a in archiveFiles)
@@ -91,12 +96,12 @@ namespace EldanToolkit.Project
         public SortedSet<string> GetFoldersInFolder(string path)
         {
             SortedSet<string> folders = new SortedSet<string>();
-            if (projectPath != null)
+            if (projectFilesPath != null)
             {
-                string fullPath = Path.Combine(projectPath, path);
+                string fullPath = Path.Combine(projectFilesPath, path);
                 if (Directory.Exists(fullPath))
                 {
-                    folders.UnionWith(Directory.GetDirectories(Path.Combine(projectPath, path)).Select((p) => Path.GetFileName(p)));
+                    folders.UnionWith(Directory.GetDirectories(Path.Combine(projectFilesPath, path)).Select((p) => Path.GetFileName(p)));
                 }
             }
             foreach (var a in archiveFiles)
@@ -108,7 +113,19 @@ namespace EldanToolkit.Project
 
         public bool IsInProject(string path)
         {
-            return Path.Exists(Path.Combine(projectPath, path));
+            return Path.Exists(Path.Combine(projectFilesPath, path));
+        }
+
+        public bool IsInArchive(string path)
+        {
+            foreach(var a in archiveFiles)
+            {
+                if(a.GetFileSystem().GetFile(path) != null)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void AddtoProject(string path)
@@ -119,8 +136,8 @@ namespace EldanToolkit.Project
                 if(file != null)
                 {
                     string dir = Path.GetDirectoryName(path);
-                    Directory.CreateDirectory(Path.Combine(projectPath, dir));
-                    FileStream fs = new FileStream(Path.Combine(projectPath, path), FileMode.CreateNew, System.IO.FileAccess.Write);
+                    Directory.CreateDirectory(Path.Combine(projectFilesPath, dir));
+                    FileStream fs = new FileStream(Path.Combine(projectFilesPath, path), FileMode.CreateNew, System.IO.FileAccess.Write);
                     fs.Write(file);
                     fs.Flush();
                     fs.Dispose();
@@ -131,7 +148,32 @@ namespace EldanToolkit.Project
 
         public void RemoveFromProject(string path)
         {
-            File.Delete(Path.Combine(projectPath, path));
+            File.Delete(Path.Combine(projectFilesPath, path));
+        }
+
+        public async void CompileProject()
+        {
+            Progress p = new Progress();
+            FileSystem fs = await FileSystem.Create(p, projectPath + "/custom", true, null, cts.Token);
+            var files = GetAllProjectFiles(projectFilesPath);
+            foreach(var file in files)
+            {
+                string relativePath = Path.GetRelativePath(file, projectFilesPath).Replace('\\', '/');
+                byte[] bytes = File.ReadAllBytes(file);
+                fs.Write(relativePath, bytes, DateTime.Now);
+            }
+            fs.Dispose();
+        }
+
+        public List<string> GetAllProjectFiles(string path)
+        {
+            List<string> files = new List<string>();
+            foreach(var dir in Directory.EnumerateDirectories(path))
+            {
+                files.AddRange(GetAllProjectFiles(dir));
+            }
+            files.AddRange(Directory.EnumerateFiles(path));
+            return files;
         }
     }
 }

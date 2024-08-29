@@ -173,7 +173,7 @@ public class FileSystem : IDisposable
 		return stream?.ReadBytes(file.DecompressedSize);
 	}
 
-	private IndexFile GetFile(string path)
+	public IndexFile GetFile(string path)
 	{
 		var file = _index.GetFile(path);
 

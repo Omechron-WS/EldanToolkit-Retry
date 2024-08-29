@@ -27,8 +27,9 @@ public partial class ProjectFileSystemView : Control
 
     private Button AddToProject = null;
     private Button RemoveFromProject = null;
+    private Button CompileProject = null;
 
-	private Color FileInProjectColor = new Color(0.5f, 0.7f, 0.6f);
+    private Color FileInProjectColor = new Color(0.5f, 0.7f, 0.6f);
     private Color DefaultFileColor = new Color(0.5f, 0.5f, 0.5f);
 
     // Called when the node enters the scene tree for the first time.
@@ -49,6 +50,10 @@ public partial class ProjectFileSystemView : Control
                 fileSystem.RemoveFromProject(selectedFilePath);
                 Refresh();
             }
+        }));
+        CompileProject = GetNode<Button>("%CompileProject");
+        CompileProject.Connect("pressed", Callable.From(() => {
+			fileSystem.CompileProject();
         }));
     }
 
