@@ -19,14 +19,38 @@ public partial class ProjectFileSystemView : Control
 
 	public string selectedFile = null;
 
-	protected string currentFolder = "";
+	public string selectedFilePath { get { return selectedFile == null ? null : $"{currentFolder}{selectedFile}"; } }
+
+	protected string currentFolder = ""; // in the format "abc/def/"
 
 	private bool needsRefresh = true;
 
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
-	{
-	}
+    private Button AddToProject = null;
+    private Button RemoveFromProject = null;
+
+	private Color FileInProjectColor = new Color(0.5f, 0.7f, 0.6f);
+    private Color DefaultFileColor = new Color(0.5f, 0.5f, 0.5f);
+
+    // Called when the node enters the scene tree for the first time.
+    public override void _Ready()
+    {
+        AddToProject = GetNode<Button>("%AddToProject");
+		AddToProject.Connect("pressed", Callable.From(() => {
+			if (selectedFile != null)
+			{
+				fileSystem.AddtoProject(selectedFilePath);
+				Refresh();
+			}
+		}));
+        RemoveFromProject = GetNode<Button>("%RemoveFromProject");
+        RemoveFromProject.Connect("pressed", Callable.From(() => {
+            if (selectedFile != null)
+            {
+                fileSystem.RemoveFromProject(selectedFilePath);
+                Refresh();
+            }
+        }));
+    }
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
@@ -58,7 +82,7 @@ public partial class ProjectFileSystemView : Control
         {
 			string fileName = Path.GetFileName(file);
             FileEntry fe = fileEntryScene.Instantiate<FileEntry>();
-            fe.SetData(fileName, FileType.Directory, () => SetFolder($"{currentFolder}/{fileName}"));
+            fe.SetData(fileName, FileType.Directory, () => SetFolder($"{currentFolder}{fileName}/"));
             fileList.AddChild(fe);
         }
 
@@ -67,7 +91,8 @@ public partial class ProjectFileSystemView : Control
         {
             string fileName = Path.GetFileName(file);
             FileEntry fe = fileEntryScene.Instantiate<FileEntry>();
-			fe.SetData(fileName, GetFileType(file), () => selectedFile = fileName);
+			fe.SetData(fileName, GetFileType(file), () => SetFile(fileName));
+			fe.AddThemeColorOverride("font_color", fileSystem.IsInProject($"{currentFolder}{fileName}") ? FileInProjectColor : DefaultFileColor);
             fileList.AddChild(fe);
         }
     }
@@ -87,10 +112,10 @@ public partial class ProjectFileSystemView : Control
 
 	protected string GetParentFolder(string path)
 	{
-		string[] split = path.Split('\\', '/');
-		if (split.Length > 0)
+		int pos = path.Replace('\\', '/').RFind("/", path.Length - 2);
+		if(pos > 0)
 		{
-			return Path.Combine(split.SkipLast(1).ToArray()).Replace('\\', '/');
+			return path.Substring(0, pos + 1);
 		}
 		return "";
 	}
@@ -107,6 +132,18 @@ public partial class ProjectFileSystemView : Control
 		selectedFile = filename;
 		string fullName = filename == null ? null : Path.Combine(currentFolder, filename);
 		EmitSignal(SignalName.SelectedFileChanged, filename, fullName);
+		AddToProject.Visible = false;
+		RemoveFromProject.Visible = false;
+		if(selectedFile != null)
+		{
+			if (fileSystem.IsInProject(fullName))
+			{
+				RemoveFromProject.Visible = true;
+			} else
+			{
+				AddToProject.Visible = true;
+			}
+		}
 	}
 
 	public void Refresh()

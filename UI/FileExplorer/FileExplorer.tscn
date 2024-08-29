@@ -32,11 +32,13 @@ layout_mode = 2
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2"]
 layout_mode = 2
 
-[node name="Add" type="Button" parent="VBoxContainer2/HBoxContainer"]
+[node name="AddToProject" type="Button" parent="VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Add To Project"
 
-[node name="Remove" type="Button" parent="VBoxContainer2/HBoxContainer"]
+[node name="RemoveFromProject" type="Button" parent="VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Remove From Project"
 
