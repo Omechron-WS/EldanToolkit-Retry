@@ -1,10 +1,8 @@
-using Nexus.Archive;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using WildStar.TextTable;
 
 namespace EldanToolkit.Project
 {
@@ -50,13 +48,13 @@ namespace EldanToolkit.Project
             get => Path.Join(ProjectPath, "Archive");
         }
 
-        public Archive? MainArchive { get; private set; }
+        //public Archive? MainArchive { get; private set; }
 
         public Project(string path)
         {
             ProjectPath = path;
             Load(); // try to load any data in that folder.
-        }
+        }/*
 
         public IEnumerable<string> FilesInDirectory(string path)
         {
@@ -120,7 +118,7 @@ namespace EldanToolkit.Project
                 return dir;
             }
             return null;
-        }
+        }*/
 
         public IEnumerable<string> SplitPath(string path)
         {
@@ -157,10 +155,10 @@ namespace EldanToolkit.Project
 
             ProgramSettings.NoteProjectLoaded(ProjectPath);
 
-            SetupArchive();
+            //SetupArchive();
         }
 
-        private void SetupArchive()
+        /*private void SetupArchive()
         {
             if (patchPath == null || MainArchive != null)
                 return;
@@ -170,6 +168,6 @@ namespace EldanToolkit.Project
                 coreDataArchive = ArchiveFileBase.FromFile(Path.Combine(patchPath, "CoreData.archive")) as ArchiveFile;
 
             MainArchive = Archive.FromFile(Path.Combine(patchPath, "ClientData.index"), coreDataArchive);
-        }
+        }*/
     }
 }

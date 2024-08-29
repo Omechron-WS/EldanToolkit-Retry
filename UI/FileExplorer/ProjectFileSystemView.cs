@@ -58,7 +58,7 @@ public partial class ProjectFileSystemView : Control
         {
 			string fileName = Path.GetFileName(file);
             FileEntry fe = fileEntryScene.Instantiate<FileEntry>();
-            fe.SetData(fileName, FileType.Directory, () => SetFolder(Path.Combine(currentFolder, fileName)));
+            fe.SetData(fileName, FileType.Directory, () => SetFolder($"{currentFolder}/{fileName}"));
             fileList.AddChild(fe);
         }
 
@@ -90,7 +90,7 @@ public partial class ProjectFileSystemView : Control
 		string[] split = path.Split('\\', '/');
 		if (split.Length > 0)
 		{
-			return Path.Combine(split.SkipLast(1).ToArray());
+			return Path.Combine(split.SkipLast(1).ToArray()).Replace('\\', '/');
 		}
 		return "";
 	}
@@ -105,7 +105,8 @@ public partial class ProjectFileSystemView : Control
 	protected void SetFile(string filename)
 	{
 		selectedFile = filename;
-		EmitSignal(SignalName.SelectedFileChanged, filename, Path.Combine(currentFolder, filename));
+		string fullName = filename == null ? null : Path.Combine(currentFolder, filename);
+		EmitSignal(SignalName.SelectedFileChanged, filename, fullName);
 	}
 
 	public void Refresh()

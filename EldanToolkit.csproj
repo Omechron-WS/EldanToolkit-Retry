@@ -4,6 +4,6 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Nexus.Archive" Version="1.0.1" />
+    <PackageReference Include="SharpCompress" Version="0.37.2" />
   </ItemGroup>
 </Project>

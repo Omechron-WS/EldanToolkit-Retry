@@ -7,7 +7,7 @@
 [sub_resource type="Resource" id="Resource_wuk2h"]
 script = ExtResource("2_ndwky")
 projectPath = "D:/Skills/Programming/Wildstar/EldanToolkitProject"
-archivePath = ""
+ArchivePath = "E:/Games/Flat/WildStar/Patch"
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_jd6tm"]
 
@@ -19,9 +19,11 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("1_bdpvt")
 fileSystem = SubResource("Resource_wuk2h")
-fileList = NodePath("VBoxContainer2/FileList")
+fileList = NodePath("VBoxContainer2/ScrollContainer/FileList")
 fileEntryScene = ExtResource("2_4pmbe")
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
@@ -40,14 +42,22 @@ text = "Remove From Project"
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer2"]
 layout_mode = 2
+size_flags_vertical = 0
 
-[node name="FileList" type="VBoxContainer" parent="VBoxContainer2"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2"]
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
+size_flags_vertical = 3
 
-[node name="Button" parent="VBoxContainer2/FileList" instance=ExtResource("2_4pmbe")]
+[node name="FileList" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Button" parent="VBoxContainer2/ScrollContainer/FileList" instance=ExtResource("2_4pmbe")]
 layout_mode = 2
 button_group = SubResource("ButtonGroup_jd6tm")
 
-[node name="Button2" parent="VBoxContainer2/FileList" instance=ExtResource("2_4pmbe")]
+[node name="Button2" parent="VBoxContainer2/ScrollContainer/FileList" instance=ExtResource("2_4pmbe")]
 layout_mode = 2
 button_group = SubResource("ButtonGroup_xutra")
