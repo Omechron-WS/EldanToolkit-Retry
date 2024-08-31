@@ -1,4 +1,5 @@
 ﻿using LibNexus.Core.Extensions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -68,27 +69,25 @@ public class IndexDirectory
 		stream.WriteUInt32((uint)Directories.Count);
 		stream.WriteUInt32((uint)Files.Count);
 
-		var stringsOffset = 0U;
+		MemoryStream stringStream = new MemoryStream();
 
 		foreach (var (name, block) in Directories)
-		{
-			stream.WriteUInt32(stringsOffset);
-			stream.WriteUInt32(block);
-			stringsOffset += (uint)(name.Length + 1);
-		}
+        {
+            stream.WriteUInt32((uint)stringStream.Position);
+            stream.WriteUInt32(block);
+            stream.Position += 4;
+            stringStream.WriteString(name);
+        }
 
 		foreach (var (name, file) in Files)
-		{
-			stream.WriteUInt32(stringsOffset);
-			file.Write(stream);
-			stringsOffset += (uint)(name.Length + 1);
-		}
+        {
+            stream.WriteUInt32((uint)stringStream.Position);
+            file.Write(stream);
+			stream.Position += 4;
+            stringStream.WriteString(name);
+        }
 
-		foreach (var name in Directories.Keys)
-			stream.WriteString(name);
-
-		foreach (var name in Files.Keys)
-			stream.WriteString(name);
+		stream.Write(stringStream.ToArray());
 	}
 
 	public static IndexDirectory Create(Stream stream)

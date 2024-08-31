@@ -66,13 +66,18 @@ namespace EldanToolkit.Project
         private List<ArchiveFilePair> archiveFiles = new List<ArchiveFilePair>();
         CancellationTokenSource cts = new CancellationTokenSource();
 
+        DateTime dummyTime = new DateTime(2017, 1, 1);
+
         private void ReadArchive()
         {
             archiveFiles.Clear();
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true, cts.Token));
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true, cts.Token));
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Path"), false, cts.Token));
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Client64"), false, cts.Token));
+            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true, cts.Token));
+            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true, cts.Token));
+            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Patch"), false, cts.Token)); // Tells the client which index files to use
+            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Client64"), false, cts.Token));
+            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/Bootstrap"), false, cts.Token));
+            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/Launcher"), false, cts.Token));
+            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/LauncherData"), true, cts.Token)); // Actual launcher files: CSS, HTML, etc.
         }
 
         public SortedSet<string> GetFilesInFolder(string path)
@@ -151,17 +156,34 @@ namespace EldanToolkit.Project
             File.Delete(Path.Combine(projectFilesPath, path));
         }
 
-        public async void CompileProject()
+        public void CompileProject()
         {
+            File.Delete(Path.Combine(projectPath, "custom.index"));
+            File.Delete(Path.Combine(projectPath, "custom.archive"));
+
             Progress p = new Progress();
-            FileSystem fs = await FileSystem.Create(p, projectPath + "/custom", true, null, cts.Token);
+            FileSystem fs = FileSystem.Create(p, projectPath + "/custom", true, null, cts.Token).Result;
             var files = GetAllProjectFiles(projectFilesPath);
             foreach(var file in files)
             {
                 string relativePath = Path.GetRelativePath(projectFilesPath, file).Replace('\\', '/');
                 byte[] bytes = File.ReadAllBytes(file);
-                fs.Write(relativePath, bytes, DateTime.Now);
+                fs.Write(relativePath, bytes, dummyTime);
             }
+            fs.Dispose();
+
+            ChangePatchIndex();
+        }
+
+        public void ChangePatchIndex()
+        {
+            File.Delete(Path.Combine(projectPath, "Patch.index"));
+            File.Copy(Path.Combine(projectPath, "Patch-Original.index"), Path.Combine(projectPath, "Patch.index"));
+
+            Progress p = new Progress();
+            FileSystem fs = FileSystem.Create(p, projectPath + "/Patch", false, null, cts.Token).Result;
+            fs.Write("custom.index", File.ReadAllBytes(projectPath + "/custom.index"), dummyTime);
+            //fs.Delete("custom.index");
             fs.Dispose();
         }
 

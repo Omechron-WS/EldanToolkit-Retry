@@ -259,11 +259,8 @@ public class FileSystem : IDisposable
 
 			File.WriteAllBytes(localPath, data);
 		}
-		else
-		{
-			if (_archive == null)
-				throw new Exception("No archive available.");
-
+        else if(_archive != null)
+        {
 			using var compressedStream = new MemoryStream();
 			var lep = new LzmaEncoderProperties();
 			using var lzmaStream = new LzmaStream(lep, false, compressedStream);
@@ -285,6 +282,10 @@ public class FileSystem : IDisposable
 
 				_archive.Store(data);
 			}
+		}
+		else // just the index file
+		{
+			file.Hash = Hash.Create(data);
 		}
 
 		_index.WriteFile(path, file);
