@@ -320,6 +320,21 @@ public class Index : IDisposable
 		return childPage;
 	}
 
+	public void SetHash(string path, Hash hash)
+	{
+		IndexFile file = GetFile(path);
+		_fileReferences[file.Hash]--;
+		if (_fileReferences[file.Hash] <= 0)
+		{
+			_fileReferences.Remove(file.Hash);
+		}
+        _fileReferences.Remove(file.Hash);
+
+        file.Hash = hash;
+        _fileReferences.TryAdd(hash, 0);
+		_fileReferences[hash]++;
+	}
+
 	public void Dispose()
 	{
 		GC.SuppressFinalize(this);

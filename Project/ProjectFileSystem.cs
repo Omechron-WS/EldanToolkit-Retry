@@ -183,7 +183,6 @@ namespace EldanToolkit.Project
             Progress p = new Progress();
             FileSystem fs = FileSystem.Create(p, projectPath + "/Patch", false, null, cts.Token).Result;
             fs.Write("custom.index", File.ReadAllBytes(projectPath + "/custom.index"), dummyTime);
-            //fs.Delete("custom.index");
             fs.Dispose();
         }
 

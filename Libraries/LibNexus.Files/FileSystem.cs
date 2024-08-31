@@ -5,6 +5,7 @@ using LibNexus.Files.ArchiveFiles;
 using LibNexus.Files.IndexFiles;
 using SharpCompress.Compressors.LZMA;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -115,14 +116,14 @@ public class FileSystem : IDisposable
 		_index.CreateDirectory(path);
 	}
 
-	public string[] ListDirectories(string path)
+	public IEnumerable<string> ListDirectories(string path)
 	{
-		return [.. _index.ListDirectories(path).Order(StringComparer.OrdinalIgnoreCase)];
+		return _index.ListDirectories(path);
 	}
 
-	public string[] ListFiles(string path)
+	public IEnumerable<string> ListFiles(string path)
 	{
-		return [.. _index.ListFiles(path).Order(StringComparer.OrdinalIgnoreCase)];
+		return _index.ListFiles(path);
 	}
 
 	public void Rename(string oldPath, string newPath)
@@ -288,6 +289,15 @@ public class FileSystem : IDisposable
 			file.Hash = Hash.Create(data);
 		}
 
+		_index.WriteFile(path, file);
+	}
+
+	public void WriteHash(string path, Hash hash, ulong compressedSize, ulong decompressedSize, DateTime dateTime)
+	{
+		var file = new IndexFile
+		{
+			Flags = IndexFileFlags.Complete, CompressedSize = compressedSize, DecompressedSize = decompressedSize, DateTime = dateTime, Hash = hash
+		};
 		_index.WriteFile(path, file);
 	}
 

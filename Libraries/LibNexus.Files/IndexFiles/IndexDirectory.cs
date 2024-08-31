@@ -75,7 +75,6 @@ public class IndexDirectory
         {
             stream.WriteUInt32((uint)stringStream.Position);
             stream.WriteUInt32(block);
-            stream.Position += 4;
             stringStream.WriteString(name);
         }
 
@@ -83,7 +82,7 @@ public class IndexDirectory
         {
             stream.WriteUInt32((uint)stringStream.Position);
             file.Write(stream);
-			stream.Position += 4;
+			stream.Position += 4; // because FileStride requires 4 more bytes?
             stringStream.WriteString(name);
         }
 
