@@ -1,6 +1,7 @@
 ﻿using Godot;
 using LibNexus.Core;
 using LibNexus.Files;
+using LibNexus.Files.ModelFiles;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,32 +11,8 @@ using System.Threading.Tasks;
 
 namespace EldanToolkit.Project
 {
-    public class ArchiveFilePair
-    {
-        FileSystem fs = null;
-        Task<FileSystem> task = null;
-        Progress progress;
-
-        public ArchiveFilePair(string index, bool hasArchive, CancellationToken token)
-        {
-            progress = new Progress();
-            task = FileSystem.Create(progress, index, hasArchive, null, token);
-        }
-
-        public FileSystem GetFileSystem()
-        {
-            if (fs == null && task != null)
-            {
-                task.Wait();
-                fs = task.Result;
-                task = null;
-            }
-            return fs;
-        }
-    }
-
     [GlobalClass]
-    public partial class ProjectFileSystem : Resource
+    public partial class ProjectFileSystem : Node
     {
         [Export(PropertyHint.GlobalDir)]
         public string projectPath;
@@ -54,6 +31,10 @@ namespace EldanToolkit.Project
                 if (archivePath != value)
                 {
                     archivePath = value;
+                    if(String.IsNullOrWhiteSpace(value))
+                    {
+                        archivePath = null;
+                    }
                     if (!Engine.IsEditorHint())
                     {
                         ReadArchive();
@@ -71,8 +52,9 @@ namespace EldanToolkit.Project
         private void ReadArchive()
         {
             archiveFiles.Clear();
-            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true, cts.Token));
-            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true, cts.Token));
+            if(archivePath == null) { return; }
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true, cts.Token));
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true, cts.Token));
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Patch"), false, cts.Token)); // Tells the client which index files to use
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Client64"), false, cts.Token));
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/Bootstrap"), false, cts.Token));
@@ -93,7 +75,10 @@ namespace EldanToolkit.Project
             }
             foreach(var a in archiveFiles)
             {
-                files.UnionWith(a.GetFileSystem().ListFiles(path));
+                if (a.IsReady())
+                {
+                    files.UnionWith(a.GetFileSystem().ListFiles(path));
+                }
             }
             return files;
         }
@@ -111,7 +96,10 @@ namespace EldanToolkit.Project
             }
             foreach (var a in archiveFiles)
             {
-                folders.UnionWith(a.GetFileSystem().ListDirectories(path));
+                if (a.IsReady())
+                {
+                    folders.UnionWith(a.GetFileSystem().ListDirectories(path));
+                }
             }
             return folders;
         }
@@ -137,6 +125,7 @@ namespace EldanToolkit.Project
         {
             foreach(var a in archiveFiles)
             {
+                if (!a.IsReady()) continue; // File was seen in another archive, probably.
                 byte[] file = a.GetFileSystem().Read(path);
                 if(file != null)
                 {
@@ -195,6 +184,45 @@ namespace EldanToolkit.Project
             }
             files.AddRange(Directory.EnumerateFiles(path));
             return files;
+        }
+
+        public void LoadModel(string path)
+        {
+            Stream stream = File.OpenRead(Path.Combine(projectFilesPath, path));
+            Model mdl = new Model(stream);
+        }
+    }
+    public class ArchiveFilePair
+    {
+        FileSystem fs = null;
+        Task<FileSystem> task = null;
+        Progress progress;
+
+        public ArchiveFilePair(string index, bool hasArchive, CancellationToken token)
+        {
+            ThreadPool.QueueUserWorkItem((o) => GD.Print(""));
+            progress = new Progress();
+            task = Task.Run(() => FileSystem.Create(progress, index, hasArchive, null, token));
+            task.ContinueWith((t) =>
+            {
+                Callable.From(() => ProjectHolder.FileSystemLoadEvent()).CallDeferred();
+            });
+        }
+
+        public FileSystem GetFileSystem()
+        {
+            if (fs == null && task != null)
+            {
+                task.Wait();
+                fs = task.Result;
+                task = null;
+            }
+            return fs;
+        }
+
+        public bool IsReady()
+        {
+            return task == null || task.IsCompleted;
         }
     }
 }

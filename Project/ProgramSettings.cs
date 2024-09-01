@@ -27,6 +27,15 @@ namespace EldanToolkit.Project
             return lastProjects.AsReadOnly();
         }
 
+        public static string GetLastProject()
+        {
+            if(lastProjects.Count == 0)
+            {
+                return null;
+            }
+            return lastProjects[0];
+        }
+
         private static string appDataPath { get => Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EldanToolkit"); }
         private static string appSettingsPath { get => Path.Join(appDataPath, "AppSettings.xml"); }
 
