@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://cn5tbfvqbc17j"]
 
 [ext_resource type="Script" path="res://UI/MainUI/MainUI.cs" id="1_nhw2b"]
-[ext_resource type="PackedScene" uid="uid://5be8g4twjf8q" path="res://UI/FileExplorer/FileExplorer.tscn" id="2_oyrul"]
+[ext_resource type="PackedScene" uid="uid://d3riqpcp87v8y" path="res://UI/FileExplorer/FileExplorerTab.tscn" id="2_e7omo"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -36,16 +36,18 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 0
 
-[node name="HSplitContainer" type="HSplitContainer" parent="Panel/VBoxContainer"]
+[node name="TabBar" type="TabBar" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 
-[node name="ProjectFiles" parent="Panel/VBoxContainer/HSplitContainer" instance=ExtResource("2_oyrul")]
+[node name="HSeparator2" type="HSeparator" parent="Panel/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 0
 
-[node name="ViewHolder" type="MarginContainer" parent="Panel/VBoxContainer/HSplitContainer"]
+[node name="TabHolder" type="Control" parent="Panel/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/margin_left = 5
-theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 5
-theme_override_constants/margin_bottom = 5
+size_flags_vertical = 3
+
+[node name="File Explorer" parent="Panel/VBoxContainer/TabHolder" instance=ExtResource("2_e7omo")]
+layout_mode = 1

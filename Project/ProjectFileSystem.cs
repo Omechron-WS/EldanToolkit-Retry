@@ -121,11 +121,11 @@ namespace EldanToolkit.Project
             return false;
         }
 
-        public void AddtoProject(string path)
+        public void AddtoProject(string path, bool forceLoad = false)
         {
             foreach(var a in archiveFiles)
             {
-                if (!a.IsReady()) continue; // File was seen in another archive, probably.
+                if (!a.IsReady() && !forceLoad) continue; // File was seen in another archive, probably.
                 byte[] file = a.GetFileSystem().Read(path);
                 if(file != null)
                 {

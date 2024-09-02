@@ -10,6 +10,7 @@ namespace EldanToolkit.Project
     public partial class Project : Node
     {
         public ProjectFileSystem FileSystem {  get; private set; }
+        public TableDataSet DataSet { get; private set; }
 
         public string ProjectPath { get; private set; }
 
@@ -56,6 +57,10 @@ namespace EldanToolkit.Project
             FileSystem.projectPath = path;
             AddChild(FileSystem);
 
+            DataSet = new TableDataSet();
+            AddChild(DataSet);
+            DataSet.PrepTables(this);
+
             Save();
             return true;
         }
@@ -86,6 +91,11 @@ namespace EldanToolkit.Project
 
             XmlNode? patchPathNode = doc.SelectSingleNode("/Settings/ArchivePath");
             FileSystem.ArchivePath = patchPathNode?.InnerText ?? null;
+
+            DataSet = new TableDataSet();
+            AddChild(DataSet);
+            DataSet.PrepTables(this);
+
             return true;
         }
     }

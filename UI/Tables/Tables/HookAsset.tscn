@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://4xcc1oq08785"]
 
-[ext_resource type="PackedScene" uid="uid://03x126xrwr1f" path="res://UI/TableView/Tables/InputBox.tscn" id="1_jltmg"]
+[ext_resource type="PackedScene" uid="uid://03x126xrwr1f" path="res://UI/Tables/Tables/InputBox.tscn" id="1_jltmg"]
 
 [node name="HookAsset" type="PanelContainer"]
 offset_right = 40.0
