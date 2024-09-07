@@ -147,11 +147,11 @@ namespace EldanToolkit.Project
 
         public void CompileProject()
         {
-            File.Delete(Path.Combine(projectPath, "custom.index"));
-            File.Delete(Path.Combine(projectPath, "custom.archive"));
+            File.Delete(Path.Combine(projectPath, "ClientData.index"));
+            File.Copy(Path.Combine(projectPath, "ClientData-Original.index"), Path.Combine(projectPath, "ClientData.index"));
 
             Progress p = new Progress();
-            FileSystem fs = FileSystem.Create(p, projectPath + "/custom", true, null, cts.Token).Result;
+            FileSystem fs = FileSystem.Create(p, projectPath + "/ClientData", false, null, cts.Token).Result;
             var files = GetAllProjectFiles(projectFilesPath);
             foreach(var file in files)
             {
@@ -171,7 +171,7 @@ namespace EldanToolkit.Project
 
             Progress p = new Progress();
             FileSystem fs = FileSystem.Create(p, projectPath + "/Patch", false, null, cts.Token).Result;
-            fs.Write("custom.index", File.ReadAllBytes(projectPath + "/custom.index"), dummyTime);
+            fs.Write("ClientData.index", File.ReadAllBytes(projectPath + "/ClientData.index"), dummyTime);
             fs.Dispose();
         }
 

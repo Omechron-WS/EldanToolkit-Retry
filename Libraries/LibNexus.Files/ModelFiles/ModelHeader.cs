@@ -90,9 +90,9 @@ public class ModelHeader
 		Materials = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64());
 		Unk33 = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64());
 		Unk34 = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64());
-		Unk35 = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64());
-		Unk36 = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64());
-		Unk37 = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64());
+		Unk35 = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64()); // vertices, according to Wildstar Studio
+		Unk36 = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64()); // indices
+		Unk37 = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64()); // submeshes
 		Geometry = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64());
 		Unk39 = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64());
 		Unk40 = new ModelChunk(stream.ReadUInt64(), stream.ReadUInt64());

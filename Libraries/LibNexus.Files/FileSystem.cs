@@ -292,15 +292,6 @@ public class FileSystem : IDisposable
 		_index.WriteFile(path, file);
 	}
 
-	public void WriteHash(string path, Hash hash, ulong compressedSize, ulong decompressedSize, DateTime dateTime)
-	{
-		var file = new IndexFile
-		{
-			Flags = IndexFileFlags.Complete, CompressedSize = compressedSize, DecompressedSize = decompressedSize, DateTime = dateTime, Hash = hash
-		};
-		_index.WriteFile(path, file);
-	}
-
 	public void Delete(string path)
 	{
 		if (_index.GetFile(path) != null)

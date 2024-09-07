@@ -59,7 +59,7 @@ namespace EldanToolkit.Project
 
             DataSet = new TableDataSet();
             AddChild(DataSet);
-            DataSet.PrepTables(this);
+            //DataSet.PrepTables(this);
 
             Save();
             return true;
@@ -94,7 +94,7 @@ namespace EldanToolkit.Project
 
             DataSet = new TableDataSet();
             AddChild(DataSet);
-            DataSet.PrepTables(this);
+            //DataSet.PrepTables(this);
 
             return true;
         }

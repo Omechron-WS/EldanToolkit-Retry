@@ -13,6 +13,7 @@ public class ModelGeometryVertex
 	public Vector3 Tangent { get; }
 	public Vector3 Normal { get; }
 	public Vector3 Bitangent { get; }
+	public byte[] Unk20 { get; } = [];
 	public Vector4 Color1 { get; }
 	public Vector4 Color2 { get; }
 	public Vector2 Uv { get; }
@@ -35,7 +36,8 @@ public class ModelGeometryVertex
 		if (vertexFlags.HasFlag(ModelGeometryVertexFlags.Bones))
 			Bones = stream.ReadBytes(4).Where(static b => b != byte.MaxValue).ToArray();
 
-		FileFormatException.ThrowIf<Model>(nameof(vertexFlags), vertexFlags.HasFlag(ModelGeometryVertexFlags.Unk0020));
+		if (vertexFlags.HasFlag(ModelGeometryVertexFlags.Unk0020))
+			Unk20 = stream.ReadBytes(4);
 
 		if (vertexFlags.HasFlag(ModelGeometryVertexFlags.Color1))
 			Color1 = ReadVector4(stream, vertexFieldTypes[6]);
@@ -70,7 +72,7 @@ public class ModelGeometryVertex
 			{
 				var x = (stream.ReadUInt8() - 127) / 127f;
 				var y = (stream.ReadUInt8() - 127) / 127f;
-				var z = 1.0f - (float)Math.Sqrt(x * x + y * y);
+				var z = (float)Math.Sqrt(1 - x * x + y * y); // Distance should be 1, sqr(distrance) = 1, so x^2+y^2+z^2 = 1. That means z^2 = 1 - (x^2 + y^2)
 
 				return new Vector3(x, y, z);
 			}
