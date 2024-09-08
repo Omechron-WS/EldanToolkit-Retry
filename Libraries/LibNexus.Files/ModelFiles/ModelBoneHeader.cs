@@ -1,4 +1,5 @@
 using LibNexus.Core.Extensions;
+using System;
 using System.IO;
 using System.Numerics;
 
@@ -36,15 +37,21 @@ public class ModelBoneHeader
 	public ulong Animation8TimeOffset { get; }
 	public ulong Animation8ValueOffset { get; }
 
+	public Int16 unk1;
+	public UInt16 unk2;
+    public UInt16 unk3;
+    public UInt16 unk4;
+	public byte[] unk5;
+
 	public ModelBoneHeader(Stream stream)
 	{
-		var unk1 = stream.ReadUInt16(); // TODO id?
-		var unk2 = stream.ReadUInt16(); // TODO flags?
-		var unk3 = stream.ReadUInt16(); // TODO parent?
-		var unk4 = stream.ReadUInt16(); // TODO mesh?
+		unk1 = stream.ReadInt16(); // TODO id?
+		unk2 = stream.ReadUInt16(); // TODO flags?
+		unk3 = stream.ReadUInt16(); // TODO parent?
+		unk4 = stream.ReadUInt16(); // TODO mesh?
 
 		Rotation = new Matrix4x4(stream.ReadUInt8(), 0, stream.ReadUInt8(), 0, 0, 1, 0, 0, stream.ReadUInt8(), 0, stream.ReadUInt8(), 0, 0, 0, 0, 1);
-		var unk5 = stream.ReadBytes(4); // TODO
+		unk5 = stream.ReadBytes(4); // TODO
 
 		Animation1Entries = stream.ReadUInt64();
 		Animation1TimeOffset = stream.ReadUInt64();

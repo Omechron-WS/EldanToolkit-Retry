@@ -121,9 +121,9 @@ public static class StreamExtensions
 		stream.Write(value);
 	}
 
-	public static void SkipPadding(this Stream stream, ulong size)
+	public static void SkipPadding(this Stream stream, ulong size, ulong offset = 0)
 	{
-		if (stream.Position % (long)size != 0)
-			stream.Position += (long)(size - (ulong)(stream.Position % (long)size));
+		if (stream.Position % (long)size != (long)offset)
+			stream.Position += (long)(size - (ulong)((stream.Position - (long)offset) % (long)size));
 	}
 }

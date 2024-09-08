@@ -23,6 +23,11 @@ public class PackPhysicalPage
 			if (_position == value)
 				return;
 
+			if((value & 16) != 0)
+			{
+				throw new Exception("Physical page position is not multiple of 16");
+			}
+
 			_stream.Position = (long)(_position - Stride / 2);
 			_stream.WriteUInt64(0);
 			var data = _stream.ReadBytes(_length);
@@ -49,7 +54,7 @@ public class PackPhysicalPage
 			if (_length == value)
 				return;
 
-			if (_length > value)
+            if (_length > value)
 			{
 				_stream.Position = (long)(_position + value);
 				_stream.WriteBytes(new byte[_length - value]);
@@ -65,7 +70,12 @@ public class PackPhysicalPage
 			_stream.WriteUInt64(value);
 
 			_length = value;
-		}
+
+            if ((_length % 16) != 0)
+            {
+                throw new Exception("Physical page length is not multiple of 16");
+            }
+        }
 	}
 
 	public PackPhysicalPage Last { get; set; }
@@ -77,8 +87,18 @@ public class PackPhysicalPage
 		_stream = stream;
 		_position = (ulong)_stream.Position + 8;
 
-		_length = (ulong)Math.Abs((long)_stream.ReadUInt64()); // TODO length can be negative... If, what does it mean? Deleted ones?
-		_stream.Position += (long)_length;
+        if (_position % 16 != 0)
+        {
+            throw new Exception("Physical page did not start at a multiple of 16 bytes");
+        }
+
+        _length = (ulong)Math.Abs((long)_stream.ReadUInt64()); // TODO length can be negative... If, what does it mean? Deleted ones?
+        if (_length % 16 != 0)
+        {
+            throw new Exception("Physical page length is not multiple of 16");
+        }
+
+        _stream.Position += (long)_length;
 		var length2 = (ulong)Math.Abs((long)_stream.ReadUInt64()); // TODO length can be negative... If, what does it mean? Deleted ones?
 
 		if (_length != length2)
@@ -87,6 +107,7 @@ public class PackPhysicalPage
 
 	public static PackPhysicalPage Create(Stream stream, ulong length)
 	{
+		stream.SkipPadding(16, 8);
 		stream.WriteUInt64(length);
 		stream.WriteBytes(new byte[length]);
 		stream.WriteUInt64(length);

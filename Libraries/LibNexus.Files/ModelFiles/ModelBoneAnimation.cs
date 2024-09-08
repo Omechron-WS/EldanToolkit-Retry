@@ -1,7 +1,6 @@
 using EldanToolkit.Libraries.LibNexus.Files;
 using LibNexus.Core.Extensions;
-using LibNexus.Core.Streams;
-using System.Diagnostics;
+using System;
 using System.IO;
 
 namespace LibNexus.Files.ModelFiles;
@@ -15,7 +14,7 @@ public class ModelBoneAnimation
 			Goto(stream, nameof(header.Animation1TimeOffset), header.Animation1TimeOffset);
 			for(ulong i = 0; i < header.Animation1Entries; i++)
             {
-                byte[] data = stream.ReadBytes(4); // TODO
+                UInt32 data = stream.ReadUInt32(); // TODO
             }
 			stream.SkipPadding(16);
 
@@ -32,7 +31,7 @@ public class ModelBoneAnimation
             Goto(stream, nameof(header.Animation2TimeOffset), header.Animation2TimeOffset);
             for (ulong i = 0; i < header.Animation2Entries; i++)
             {
-                byte[] data = stream.ReadBytes(4); // TODO
+                UInt32 data = stream.ReadUInt32(); // TODO
             }
             stream.SkipPadding(16);
 
@@ -49,7 +48,7 @@ public class ModelBoneAnimation
             Goto(stream, nameof(header.Animation3TimeOffset), header.Animation3TimeOffset);
             for (ulong i = 0; i < header.Animation3Entries; i++)
             {
-                byte[] data = stream.ReadBytes(4); // TODO
+                UInt32 data = stream.ReadUInt32(); // TODO
             }
             stream.SkipPadding(16);
 
@@ -66,7 +65,7 @@ public class ModelBoneAnimation
             Goto(stream, nameof(header.Animation4TimeOffset), header.Animation4TimeOffset);
             for (ulong i = 0; i < header.Animation4Entries; i++)
             {
-                byte[] data = stream.ReadBytes(4); // TODO
+                UInt32 data = stream.ReadUInt32(); // TODO
             }
             stream.SkipPadding(16);
 
@@ -83,7 +82,7 @@ public class ModelBoneAnimation
             Goto(stream, nameof(header.Animation5TimeOffset), header.Animation5TimeOffset);
             for (ulong i = 0; i < header.Animation5Entries; i++)
             {
-                byte[] data = stream.ReadBytes(4); // TODO
+                UInt32 data = stream.ReadUInt32(); // TODO
             }
 			stream.SkipPadding(16);
 
@@ -100,7 +99,7 @@ public class ModelBoneAnimation
             Goto(stream, nameof(header.Animation6TimeOffset), header.Animation6TimeOffset);
             for (ulong i = 0; i < header.Animation6Entries; i++)
             {
-                byte[] data = stream.ReadBytes(4); // TODO
+                UInt32 data = stream.ReadUInt32(); // TODO
             }
             stream.SkipPadding(16);
 
@@ -117,7 +116,7 @@ public class ModelBoneAnimation
             Goto(stream, nameof(header.Animation7TimeOffset), header.Animation7TimeOffset);
             for (ulong i = 0; i < header.Animation7Entries; i++)
             {
-                byte[] data = stream.ReadBytes(4); // TODO
+                UInt32 data = stream.ReadUInt32(); // TODO
             }
             stream.SkipPadding(16);
 
@@ -134,7 +133,7 @@ public class ModelBoneAnimation
             Goto(stream, nameof(header.Animation8TimeOffset), header.Animation8TimeOffset);
             for (ulong i = 0; i < header.Animation8Entries; i++)
             {
-                byte[] data = stream.ReadBytes(4); // TODO
+                UInt32 data = stream.ReadUInt32(); // TODO
             }
             stream.SkipPadding(16);
 

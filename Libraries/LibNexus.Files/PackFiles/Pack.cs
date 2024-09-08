@@ -265,8 +265,9 @@ public class Pack : IDisposable
 		return newVirtualPage;
 	}
 
-	private PackPhysicalPage AllocatePhysicalPage(ulong length)
+	private PackPhysicalPage AllocatePhysicalPage(ulong len)
 	{
+		ulong length = 16 + (len / 16) * 16; // Round up to multiple of 16
 		var physicalPage = _physicalPages.Values.FirstOrDefault(
 			physicalPage => physicalPage != VirtualPagesPhysicalPage && physicalPage.VirtualPages.Count == 0
 				&& (physicalPage.Length >= length || physicalPage.Next == null)
@@ -293,18 +294,20 @@ public class Pack : IDisposable
 
 	private PackPhysicalPage ResizePhysicalPage(PackPhysicalPage physicalPage, ulong length)
 	{
+		length = 16 + (length / 16) * 16;
 		MergeLast(physicalPage);
 		MergeNext(physicalPage);
 
 		if (physicalPage.Length > length + PackPhysicalPage.Stride)
 		{
-			var remaining = physicalPage.Length - length - PackPhysicalPage.Stride;
+			var end = physicalPage.Position + physicalPage.Length;
 
-			physicalPage.Length -= remaining + PackPhysicalPage.Stride;
+			physicalPage.Length = length;
 
 			_stream.Position = (long)(physicalPage.Position + physicalPage.Length + PackPhysicalPage.Stride / 2);
+			_stream.SkipPadding(16, 8);
 
-			var remainingPhysicalPage = PackPhysicalPage.Create(_stream, remaining);
+			var remainingPhysicalPage = PackPhysicalPage.Create(_stream, ((end - (ulong)_stream.Position) / 16) * 16);
 			remainingPhysicalPage.Last = physicalPage;
 			remainingPhysicalPage.Next = physicalPage.Next;
 
@@ -323,11 +326,9 @@ public class Pack : IDisposable
 
 		if (physicalPage.Next == null)
 		{
-			var missing = length - physicalPage.Length;
-
-			_header.Length += missing;
-			physicalPage.Length += missing;
-
+            physicalPage.Length = length;
+            _header.Length += physicalPage.Position + physicalPage.Length + PackPhysicalPage.Stride / 2;
+			
 			return physicalPage;
 		}
 

@@ -25,6 +25,11 @@ public class PackVirtualPage
 			if (_offset == value)
 				return;
 
+			if (_offset % 16 != 0)
+			{
+				throw new System.Exception("Virtual page not at multiple of 16");
+			}
+
 			_offset = value;
 
 			_stream.Position = (long)(Position + 0);
