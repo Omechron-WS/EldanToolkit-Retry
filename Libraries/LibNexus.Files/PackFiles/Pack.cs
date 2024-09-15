@@ -1,4 +1,5 @@
-﻿using LibNexus.Core;
+﻿using EldanToolkit.Libraries.LibNexus.Files;
+using LibNexus.Core;
 using LibNexus.Core.Extensions;
 using System;
 using System.Collections.Generic;
@@ -169,7 +170,7 @@ public class Pack : IDisposable
 
 	public ulong Add(ulong length)
 	{
-		length = (ulong)(Math.Ceiling(length / 16f) * 16);
+		length = length.RoundUpTo(16);
 
         var virtualPage = AllocateVirtualPage();
 		var physicalPage = AllocatePhysicalPage(length);
@@ -198,7 +199,7 @@ public class Pack : IDisposable
 		if (page >= _header.VirtualPages)
 			return;
 
-        length = (ulong) (Math.Ceiling(length / 16f) * 16); // Round up to multiple of 16
+		length = length.RoundUpTo(16);
 
         var virtualPage = _virtualPages[(int)page];
 		var physicalPage = virtualPage.PhysicalPage;
@@ -269,9 +270,9 @@ public class Pack : IDisposable
 		return newVirtualPage;
 	}
 
-	private PackPhysicalPage AllocatePhysicalPage(ulong len)
+	private PackPhysicalPage AllocatePhysicalPage(ulong length)
 	{
-		ulong length = (ulong)(Math.Ceiling(len / 16f) * 16); // Round up to multiple of 16
+		length = length.RoundUpTo(16);
 		var physicalPage = _physicalPages.Values.FirstOrDefault(
 			physicalPage => physicalPage != VirtualPagesPhysicalPage && physicalPage.VirtualPages.Count == 0
 				&& (physicalPage.Length >= length || physicalPage.Next == null)
@@ -298,7 +299,7 @@ public class Pack : IDisposable
 
 	private PackPhysicalPage ResizePhysicalPage(PackPhysicalPage physicalPage, ulong length)
 	{
-		length = 16 + (length / 16) * 16;
+		length = length.RoundUpTo(16);
 		MergeLast(physicalPage);
 		MergeNext(physicalPage);
 

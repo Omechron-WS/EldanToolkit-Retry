@@ -74,12 +74,6 @@ public class PackPhysicalPage
 
 			_length = value;
 
-            _stream.Position = (long)(_position - Stride / 2);
-			ulong len = _stream.ReadUInt64();
-
-            _stream.Position = (long)(_position + _length);
-            ulong len2 = _stream.ReadUInt64();
-
             if ((_length % 16) != 0)
             {
                 throw new Exception("Physical page length is not multiple of 16");
