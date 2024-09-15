@@ -55,7 +55,6 @@ public class IndexDirectory
 			stream.Position = startOffset + i * FileStride;
 			var nameOffset = stream.ReadUInt32();
 			var file = new IndexFile(stream);
-			stream.ReadUInt32(); // TODO value on translation archives, LauncherData.archive! no idea yet what it is...
 
 			stream.Position = stringsOffset + nameOffset;
 			var name = stream.ReadString();
@@ -82,7 +81,6 @@ public class IndexDirectory
         {
             stream.WriteUInt32((uint)stringStream.Position);
             file.Write(stream);
-			stream.Position += 4; // because FileStride requires 4 more bytes?
             stringStream.WriteString(name);
         }
 

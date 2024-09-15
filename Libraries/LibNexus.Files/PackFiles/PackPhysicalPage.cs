@@ -1,3 +1,4 @@
+using Godot;
 using LibNexus.Core.Extensions;
 using System;
 using System.Collections.ObjectModel;
@@ -23,7 +24,9 @@ public class PackPhysicalPage
 			if (_position == value)
 				return;
 
-			if((value & 16) != 0)
+			ulong rem = value % 16;
+
+			if(rem != 0)
 			{
 				throw new Exception("Physical page position is not multiple of 16");
 			}
@@ -56,7 +59,7 @@ public class PackPhysicalPage
 
             if (_length > value)
 			{
-				_stream.Position = (long)(_position + value);
+				_stream.Position = (long)(_position + value + Stride / 2);
 				_stream.WriteBytes(new byte[_length - value]);
 			}
 
@@ -70,6 +73,12 @@ public class PackPhysicalPage
 			_stream.WriteUInt64(value);
 
 			_length = value;
+
+            _stream.Position = (long)(_position - Stride / 2);
+			ulong len = _stream.ReadUInt64();
+
+            _stream.Position = (long)(_position + _length);
+            ulong len2 = _stream.ReadUInt64();
 
             if ((_length % 16) != 0)
             {
@@ -102,7 +111,8 @@ public class PackPhysicalPage
 		var length2 = (ulong)Math.Abs((long)_stream.ReadUInt64()); // TODO length can be negative... If, what does it mean? Deleted ones?
 
 		if (_length != length2)
-			throw new Exception("PackPhysicalPage: Invalid length");
+			GD.PrintErr($"PackPhysicalPage: length 1 ({_length}) does not match length 2 ({length2})");
+			//throw new Exception("PackPhysicalPage: Invalid length");
 	}
 
 	public static PackPhysicalPage Create(Stream stream, ulong length)

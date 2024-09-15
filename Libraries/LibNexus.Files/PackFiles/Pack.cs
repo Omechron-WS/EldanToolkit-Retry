@@ -169,7 +169,9 @@ public class Pack : IDisposable
 
 	public ulong Add(ulong length)
 	{
-		var virtualPage = AllocateVirtualPage();
+		length = (ulong)(Math.Ceiling(length / 16f) * 16);
+
+        var virtualPage = AllocateVirtualPage();
 		var physicalPage = AllocatePhysicalPage(length);
 
 		virtualPage.Offset = physicalPage.Position;
@@ -196,7 +198,9 @@ public class Pack : IDisposable
 		if (page >= _header.VirtualPages)
 			return;
 
-		var virtualPage = _virtualPages[(int)page];
+        length = (ulong) (Math.Ceiling(length / 16f) * 16); // Round up to multiple of 16
+
+        var virtualPage = _virtualPages[(int)page];
 		var physicalPage = virtualPage.PhysicalPage;
 
 		if (physicalPage == null)
@@ -267,7 +271,7 @@ public class Pack : IDisposable
 
 	private PackPhysicalPage AllocatePhysicalPage(ulong len)
 	{
-		ulong length = 16 + (len / 16) * 16; // Round up to multiple of 16
+		ulong length = (ulong)(Math.Ceiling(len / 16f) * 16); // Round up to multiple of 16
 		var physicalPage = _physicalPages.Values.FirstOrDefault(
 			physicalPage => physicalPage != VirtualPagesPhysicalPage && physicalPage.VirtualPages.Count == 0
 				&& (physicalPage.Length >= length || physicalPage.Next == null)
@@ -325,9 +329,9 @@ public class Pack : IDisposable
 			return physicalPage;
 
 		if (physicalPage.Next == null)
-		{
+        {
+            _header.Length += length - physicalPage.Length;
             physicalPage.Length = length;
-            _header.Length += physicalPage.Position + physicalPage.Length + PackPhysicalPage.Stride / 2;
 			
 			return physicalPage;
 		}
@@ -388,8 +392,10 @@ public class Pack : IDisposable
 
 		_physicalPages.Remove(physicalPage.Position);
 
-		physicalPage.Position -= grow + PackPhysicalPage.Stride;
-		physicalPage.Length += grow + PackPhysicalPage.Stride;
+		ulong end = physicalPage.Position + physicalPage.Length;
+
+		physicalPage.Position = remove.Position;
+		physicalPage.Length = end - remove.Position;
 
 		_physicalPages.Add(physicalPage.Position, physicalPage);
 	}
@@ -410,7 +416,9 @@ public class Pack : IDisposable
 		if (physicalPage.Next != null)
 			physicalPage.Next.Last = physicalPage;
 
-		physicalPage.Length += grow + PackPhysicalPage.Stride;
+		ulong end = remove.Position + remove.Length;
+
+		physicalPage.Length = end - physicalPage.Position;
 	}
 
 	public void Dispose()

@@ -153,11 +153,14 @@ namespace EldanToolkit.Project
             Progress p = new Progress();
             FileSystem fs = FileSystem.Create(p, projectPath + "/ClientData", false, null, cts.Token).Result;
             var files = GetAllProjectFiles(projectFilesPath);
+            int num = 1;
             foreach(var file in files)
             {
+                GD.Print($"Processing file #{num}: {file}");
                 string relativePath = Path.GetRelativePath(projectFilesPath, file).Replace('\\', '/');
                 byte[] bytes = File.ReadAllBytes(file);
                 fs.Write(relativePath, bytes, dummyTime);
+                num += 1;
             }
             fs.Dispose();
 
