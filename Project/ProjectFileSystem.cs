@@ -53,16 +53,14 @@ namespace EldanToolkit.Project
         private List<ArchiveFilePair> archiveFiles = new List<ArchiveFilePair>();
         CancellationTokenSource cts = new CancellationTokenSource();
 
-        DateTime dummyTime = new DateTime(2017, 1, 1);
-
         private void ReadArchive()
         {
             archiveFiles.Clear();
             if(archivePath == null) { return; }
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true, cts.Token));
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true, cts.Token));
+            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true, cts.Token));
+            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true, cts.Token));
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Patch"), false, cts.Token)); // Tells the client which index files to use
-            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Client64"), false, cts.Token));
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Client64"), false, cts.Token));
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/Bootstrap"), false, cts.Token));
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/Launcher"), false, cts.Token));
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/LauncherData"), true, cts.Token)); // Actual launcher files: CSS, HTML, etc.
@@ -153,35 +151,83 @@ namespace EldanToolkit.Project
 
         public void CompileProject()
         {
-            File.Delete(Path.Combine(projectPath, "ClientData.index"));
-            File.Copy(Path.Combine(originalFilesPath, "ClientData.index"), Path.Combine(projectPath, "ClientData.index"));
+            Directory.CreateDirectory(clientPatchPath); // Make sure this folder exists
 
-            Progress p = new Progress();
-            FileSystem fs = FileSystem.Create(p, projectPath + "/ClientData", false, null, cts.Token).Result;
-            var files = GetAllProjectFiles(projectFilesPath);
-            int num = 1;
-            foreach(var file in files)
+            File.Delete(Path.Combine(clientPatchPath, "Patch.index"));
+            File.Copy(Path.Combine(originalFilesPath, "Patch.index"), Path.Combine(clientPatchPath, "Patch.index"));
+
+            FileSystem patchIndex = FileSystem.Create(new Progress(), clientPatchPath + "/Patch", false, null, cts.Token).Result;
+
+            List<ArchiveFilePair> archives = new();
+            ArchiveFilePair defaultArchive = null;
+
             {
-                GD.Print($"Processing file #{num}: {file}");
-                string relativePath = Path.GetRelativePath(projectFilesPath, file).Replace('\\', '/');
-                byte[] bytes = File.ReadAllBytes(file);
-                fs.Write(relativePath, bytes, dummyTime);
-                num += 1;
+                // Read index file list
+                var archiveFiles = patchIndex.ListFiles(""); // has no folders
+                foreach (var file in archiveFiles)
+                {
+                    if (!File.Exists(Path.Combine(originalFilesPath, file))) continue; // Probably Client.index, for 32-bit client.
+
+                    File.Delete(Path.Combine(clientPatchPath, file));
+                    File.Copy(Path.Combine(originalFilesPath, file), Path.Combine(clientPatchPath, file));
+
+                    archives.Add(new ArchiveFilePair(Path.Combine(clientPatchPath, Path.GetFileNameWithoutExtension(file)), false, cts.Token));
+                    if (file.Equals("ClientData.index", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        defaultArchive = archives[archives.Count - 1];
+                    }
+                }
             }
-            fs.Dispose();
 
-            ChangePatchIndex();
-        }
+            if (defaultArchive == null)
+            {
+                // Lol, we dun goofed?
+                throw new InvalidDataException("Could not find ClientData.index!");
+            }
 
-        public void ChangePatchIndex()
-        {
-            File.Delete(Path.Combine(projectPath, "Patch.index"));
-            File.Copy(Path.Combine(originalFilesPath, "Patch.index"), Path.Combine(projectPath, "Patch.index"));
+            {
+                // Write index files
+                var files = GetAllProjectFiles(projectFilesPath);
+                int num = 1;
+                foreach (var file in files)
+                {
+                    GD.Print($"Processing file #{num}: {file}");
+                    string relativePath = Path.GetRelativePath(projectFilesPath, file).Replace('\\', '/');
+                    ArchiveFilePair target = null;
+                    foreach (var archive in archives)
+                    {
+                        if (archive.GetFileSystem().GetFile(relativePath) != null)
+                        {
+                            target = archive;
+                            break;
+                        }
+                    }
+                    target = target ?? defaultArchive;
+                    byte[] bytes = File.ReadAllBytes(file);
+                    target.GetFileSystem().Write(relativePath, bytes, File.GetLastWriteTimeUtc(file));
+                    num += 1;
+                }
 
-            Progress p = new Progress();
-            FileSystem fs = FileSystem.Create(p, projectPath + "/Patch", false, null, cts.Token).Result;
-            fs.Write("ClientData.index", File.ReadAllBytes(projectPath + "/ClientData.index"), dummyTime);
-            fs.Dispose();
+                foreach (var archive in archives)
+                {
+                    archive.GetFileSystem().Dispose();
+                }
+                archives.Clear();
+            }
+
+            {
+                // Write Patch.index
+                var archiveFiles = patchIndex.ListFiles("");
+                foreach (var file in archiveFiles)
+                {
+                    string path = Path.Combine(clientPatchPath, file);
+                    if (File.Exists(path))
+                    {
+                        patchIndex.Write(file, File.ReadAllBytes(path), File.GetLastWriteTimeUtc(path));
+                    }
+                }
+                patchIndex.Dispose();
+            }
         }
 
         public List<string> GetAllProjectFiles(string path)
