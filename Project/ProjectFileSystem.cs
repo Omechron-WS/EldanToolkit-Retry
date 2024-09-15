@@ -19,6 +19,12 @@ namespace EldanToolkit.Project
 
         public string projectFilesPath { get { return Path.Combine(projectPath, "ProjectFiles"); } }
 
+        public string clientOverridePath { get { return Path.Combine(projectPath, "ClientOverride"); } }
+        public string clientPatchPath { get { return Path.Combine(projectPath, "ClientPatch"); } }
+        public string launcherOverridePath { get { return Path.Combine(projectPath, "LauncherOverride"); } }
+        public string launcherPatchPath { get { return Path.Combine(projectPath, "LauncherPatch"); } }
+        public string originalFilesPath { get { return Path.Combine(projectPath, "OriginalFiles"); } }
+
         [Export(PropertyHint.GlobalDir)]
         public string ArchivePath
         {
@@ -148,7 +154,7 @@ namespace EldanToolkit.Project
         public void CompileProject()
         {
             File.Delete(Path.Combine(projectPath, "ClientData.index"));
-            File.Copy(Path.Combine(projectPath, "ClientData-Original.index"), Path.Combine(projectPath, "ClientData.index"));
+            File.Copy(Path.Combine(originalFilesPath, "ClientData.index"), Path.Combine(projectPath, "ClientData.index"));
 
             Progress p = new Progress();
             FileSystem fs = FileSystem.Create(p, projectPath + "/ClientData", false, null, cts.Token).Result;
@@ -170,7 +176,7 @@ namespace EldanToolkit.Project
         public void ChangePatchIndex()
         {
             File.Delete(Path.Combine(projectPath, "Patch.index"));
-            File.Copy(Path.Combine(projectPath, "Patch-Original.index"), Path.Combine(projectPath, "Patch.index"));
+            File.Copy(Path.Combine(originalFilesPath, "Patch.index"), Path.Combine(projectPath, "Patch.index"));
 
             Progress p = new Progress();
             FileSystem fs = FileSystem.Create(p, projectPath + "/Patch", false, null, cts.Token).Result;
