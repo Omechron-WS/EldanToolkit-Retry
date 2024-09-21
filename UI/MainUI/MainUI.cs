@@ -9,6 +9,8 @@ public partial class MainUI : Control
 	private PopupMenu FileMenu;
     private List<Action> FileMenuCallbacks;
     private PopupMenu RecentProjects;
+    private PopupMenu BuildMenu;
+    private List<Action> BuildMenuCallbacks;
 
     private List<Control> tabs = new();
     private TabBar tabBar;
@@ -106,6 +108,30 @@ public partial class MainUI : Control
         }*/
 
         SetupWizardList(menuBar);
+
+
+        BuildMenu = new PopupMenu();
+        BuildMenuCallbacks = new();
+        BuildMenu.Name = "Build";
+        menuBar.AddChild(BuildMenu);
+        BuildMenu.Connect("index_pressed", Callable.From((int index) => {
+            if (BuildMenuCallbacks[index] != null)
+            {
+                BuildMenuCallbacks[index]();
+            }
+        }));
+
+        BuildMenu.AddItem("Convert Files");
+        BuildMenuCallbacks.Add(() =>
+        {
+            ProjectHolder.project.ConvertFiles();
+        });
+
+        BuildMenu.AddItem("Convert & Compile Project");
+        BuildMenuCallbacks.Add(() =>
+        {
+            ProjectHolder.project.ConvertAndCompile();
+        });
     }
 
     public void SetupWizardList(MenuBar menu)

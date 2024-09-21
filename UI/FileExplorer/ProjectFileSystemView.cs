@@ -10,22 +10,17 @@ public partial class ProjectFileSystemView : Control
 	[Export]
 	public PackedScene fileEntryScene;
 
-	[Signal]
-	public delegate void SelectedFileChangedEventHandler(string filename, string filepath);
+	public delegate void SelectedFileChangedEventHandler(string filename, string folder, string importFile);
+    public SelectedFileChangedEventHandler SelectedFileChanged;
 
 	public string selectedFile = null;
+    public string selectedImportFile = null;
 
 	public string selectedFilePath { get { return selectedFile == null ? null : $"{currentFolder}{selectedFile}"; } }
 
 	protected string currentFolder = ""; // in the format "abc/def/"
 
 	private bool needsRefresh = true;
-
-    private Control ArchivePathWarning = null;
-    private Button AddToProject = null;
-    private Button RemoveFromProject = null;
-    private Button CompileProject = null;
-    private Button LoadModel = null;
 
     private Color FileInProjectColor = new Color(0.5f, 0.7f, 0.6f);
     private Color DefaultFileColor = new Color(0.5f, 0.5f, 0.5f);
@@ -37,44 +32,9 @@ public partial class ProjectFileSystemView : Control
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        ArchivePathWarning = GetNode<Control>("%ArchivePathWarning");
-
-        AddToProject = GetNode<Button>("%AddToProject");
-        AddToProject.Connect("pressed", Callable.From(() => {
-            if (selectedFile != null)
-            {
-                pfs?.AddtoProject(selectedFilePath);
-                Refresh();
-            }
-        }));
-
-        RemoveFromProject = GetNode<Button>("%RemoveFromProject");
-        RemoveFromProject.Connect("pressed", Callable.From(() => {
-            if (selectedFile != null)
-            {
-                pfs?.RemoveFromProject(selectedFilePath);
-                Refresh();
-            }
-        }));
-
-        CompileProject = GetNode<Button>("%CompileProject");
-        CompileProject.Connect("pressed", Callable.From(() => {
-            pfs?.CompileProject();
-        }));
-
-        LoadModel = GetNode<Button>("%LoadModel");
-        LoadModel.Connect("pressed", Callable.From(() => {
-            if (selectedFile != null)
-            {
-                pfs?.LoadModel(selectedFilePath);
-                Refresh();
-			}
-        }));
 
         ProjectLoadEvent = Callable.From(Refresh);
         ProjectHolder.Instance.Connect(ProjectHolder.SignalName.FileSystemLoad, ProjectLoadEvent);
-
-        SetButtons();
     }
 
     protected override void Dispose(bool disposing)
@@ -165,37 +125,30 @@ public partial class ProjectFileSystemView : Control
 	}
 
 	protected void SetFile(string filename)
-	{
-		selectedFile = filename;
-		EmitSignal(SignalName.SelectedFileChanged, filename, selectedFilePath);
-        SetButtons();
-	}
-
-	protected void SetButtons()
-	{
-        ArchivePathWarning.Visible = false;
-        AddToProject.Visible = false;
-        RemoveFromProject.Visible = false;
-        LoadModel.Visible = false;
-
-        if (selectedFile != null)
+    {
+        selectedFile = filename;
+        if (filename == null)
         {
-            if (selectedFile != null && pfs.IsInProject(selectedFilePath))
+            selectedImportFile = null;
+            return;
+        }
+        if (Path.GetExtension(filename).Equals(".import", System.StringComparison.InvariantCultureIgnoreCase))
+        {
+            selectedImportFile = filename;
+        }
+        else
+        {
+            if(File.Exists(selectedFilePath + ".import"))
             {
-                RemoveFromProject.Visible = true;
-                LoadModel.Visible = true;
+                selectedImportFile = filename + ".import";
             }
             else
             {
-                AddToProject.Visible = true;
+                selectedImportFile = null;
             }
         }
-
-        if(ProjectHolder.project?.FileSystem?.ArchivePath == null)
-        {
-            ArchivePathWarning.Visible = true;
-        }
-    }
+        SelectedFileChanged?.Invoke(filename, currentFolder, selectedImportFile);
+	}
 
 	public void Refresh()
 	{

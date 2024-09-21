@@ -98,5 +98,16 @@ namespace EldanToolkit.Project
 
             return true;
         }
+
+        public void ConvertFiles()
+        {
+
+        }
+
+        public void ConvertAndCompile()
+        {
+            ConvertFiles();
+            FileSystem.CompileProject();
+        }
     }
 }
