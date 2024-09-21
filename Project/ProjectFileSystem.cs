@@ -57,10 +57,10 @@ namespace EldanToolkit.Project
         {
             archiveFiles.Clear();
             if(archivePath == null) { return; }
-            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true, cts.Token));
-            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true, cts.Token));
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true, cts.Token));
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true, cts.Token));
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Patch"), false, cts.Token)); // Tells the client which index files to use
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Client64"), false, cts.Token));
+            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Client64"), false, cts.Token));
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/Bootstrap"), false, cts.Token));
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/Launcher"), false, cts.Token));
             //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/LauncherData"), true, cts.Token)); // Actual launcher files: CSS, HTML, etc.

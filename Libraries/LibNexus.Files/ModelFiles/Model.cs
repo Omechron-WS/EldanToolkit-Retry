@@ -17,6 +17,7 @@ public class Model
 	public ModelTexture[] Textures { get; } = [];
 	public ModelMaterial[] Materials { get; } = [];
 	public ModelGeometry[] Geometry { get; } = [];
+	public ModelLight[] Lights { get; } = [];
 
 	private readonly ModelHeader _header;
 
@@ -141,14 +142,10 @@ public class Model
 			}
 		}
 
-		if (_header.Unk41.Count != 0)
+		if (_header.Lights.Count != 0)
         {
-            Goto(dataStream, nameof(_header.Unk41), _header.Unk41.Offset);
-
-			for (var i = 0UL; i < _header.Unk41.Count; i++)
-				stream.ReadBytes(552); // TODO
-
-			dataStream.SkipPadding(16);
+            Goto(dataStream, nameof(_header.Lights), _header.Lights.Offset);
+			Lights = ReadLights(dataStream);
 		}
 
 		if (_header.Unk42.Count != 0)
@@ -339,5 +336,23 @@ public class Model
         }
 
 		return geometries;
+	}
+
+	private ModelLight[] ReadLights(SegmentStream stream)
+	{
+		Goto(stream, nameof(_header.Lights), _header.Lights.Offset);
+
+		var lights = new ModelLight[_header.Lights.Count];
+
+        using var lightStream = new SegmentStream(stream);
+
+        for (var i = 0UL; i < _header.Lights.Count; i++)
+        {
+            var geometry = new ModelLight(lightStream, _header.Unk44.Offset - _header.Lights.Offset);
+            lightStream.SkipPadding(16);
+            lights[i] = geometry;
+        }
+
+        return lights;
 	}
 }
