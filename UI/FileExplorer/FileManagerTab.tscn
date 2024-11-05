@@ -13,7 +13,7 @@ grow_vertical = 2
 size_flags_vertical = 3
 script = ExtResource("1_ukfbr")
 FileView = NodePath("VBoxContainer/ProjectFiles")
-SidebarContainer = NodePath("ScrollContainer")
+SidebarContainer = NodePath("ScrollContainer/VBoxContainer")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -74,3 +74,6 @@ layout_mode = 2
 [node name="ScrollContainer" type="ScrollContainer" parent="."]
 layout_mode = 2
 horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
