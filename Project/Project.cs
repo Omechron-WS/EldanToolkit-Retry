@@ -25,18 +25,6 @@ namespace EldanToolkit.Project
 
         public void Save()
         {
-            XmlDocument doc = new XmlDocument();
-            XmlNode set = doc.CreateElement("Settings");
-            doc.AppendChild(set);
-
-            if (FileSystem.ArchivePath != null)
-            {
-                XmlNode patchPathNode = doc.CreateElement("ArchivePath");
-                patchPathNode.InnerText = FileSystem.ArchivePath;
-                set.AppendChild(patchPathNode);
-            }
-
-            doc.Save(ProjectFilePath);
         }
 
         public static Project NewProject(string path)
@@ -85,12 +73,6 @@ namespace EldanToolkit.Project
             FileSystem = new ProjectFileSystem();
             FileSystem.projectPath = path;
             AddChild(FileSystem);
-
-            XmlDocument doc = new XmlDocument();
-            doc.Load(ProjectFilePath);
-
-            XmlNode? patchPathNode = doc.SelectSingleNode("/Settings/ArchivePath");
-            FileSystem.ArchivePath = patchPathNode?.InnerText ?? null;
 
             DataSet = new TableDataSet();
             AddChild(DataSet);

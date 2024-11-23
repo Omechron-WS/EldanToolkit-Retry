@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://dam3p4p72kyvv"]
 
 [ext_resource type="Script" path="res://UI/FileExplorer/FileEntry.cs" id="1_kwve3"]
-[ext_resource type="Texture2D" uid="uid://dnjoxlx67f0fh" path="res://UI/FileExplorer/Icons/dds.svg" id="1_u1260"]
+[ext_resource type="Texture2D" uid="uid://dnjoxlx67f0fh" path="res://UI/FileExplorer/Icons/cc0-file-icons/dds.svg" id="1_u1260"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_g6cgd"]
 

@@ -77,7 +77,7 @@ public partial class ProjectFileManager : Control
             }
         }
 
-        if (ProjectHolder.project?.FileSystem?.ArchivePath == null)
+        if (ProgramSettings.ArchivePath == null)
         {
             ArchivePathWarning.Visible = true;
         }

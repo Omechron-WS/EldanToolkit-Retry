@@ -17,7 +17,10 @@ public partial class MainUI : Control
     private Control tabHolder;
     private Control fileExplorerTab;
 
-    [Export]
+	[Export]
+	public PackedScene ProjectSettingsUI;
+
+	[Export]
     public PackedScene DecorColorShiftWizard;
 
     private List<PackedScene> wizards = new();
@@ -84,22 +87,12 @@ public partial class MainUI : Control
             }
         });
 
-        FileMenu.AddItem("Set Archive Path");
+        FileMenu.AddItem("Program Settings");
         FileMenuCallbacks.Add(() =>
         {
-            if (ProjectHolder.project?.FileSystem == null) { return; }
-            FileDialog fd = new FileDialog();
-            fd.FileMode = FileDialog.FileModeEnum.OpenDir;
-            fd.Access = FileDialog.AccessEnum.Filesystem;
-            fd.UseNativeDialog = true;
-            fd.CurrentDir = ProjectHolder.project?.FileSystem?.ArchivePath ?? "C:/";
-            fd.Show();
-            string path = fd.CurrentFile;
-            if (path != null)
-            {
-                ProjectHolder.project.FileSystem.ArchivePath = path;
-                ProjectHolder.project.Save();
-            }
+            Control settingsUI = ProjectSettingsUI.Instantiate<Control>();
+            GetTree().Root.AddChild(settingsUI);
+            settingsUI.MoveToFront();
         });
 
         /*if (FileMenu != null && RecentProjects != null)

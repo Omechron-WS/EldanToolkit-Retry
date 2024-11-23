@@ -3,81 +3,99 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Xml.Serialization;
 
 namespace EldanToolkit.Project
 {
+    [XmlRoot("ProgramSettings")]
+    public class ProgramSettingsFile
+    {
+        [XmlArray("LastProjects")]
+        [XmlArrayItem("Project")]
+        public List<string> lastProjects { get; set; } = new List<string>();
+
+        [XmlAttribute("ArchivePath")]
+        public string archivePath { get; set; }
+		[XmlAttribute("NexusVaultPath")]
+		public string nexusVaultPath { get; set; }
+	}
+
     public static class ProgramSettings
     {
-#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
-        private static List<string> lastProjects = new List<string>();
+		public static string ArchivePath { get { return file.archivePath; } set { file.archivePath = value; QueueSave(); } }
+		public static string NexusVaultPath { get { return file.nexusVaultPath; } set { file.nexusVaultPath = value; QueueSave(); } }
+		
+        private static ProgramSettingsFile file;
+
         public static void NoteProjectLoaded(string path)
         {
-            lastProjects.Remove(path);
-            lastProjects.Insert(0, path);
-            if (lastProjects.Count > 10)
+			file.lastProjects.Remove(path);
+			file.lastProjects.Insert(0, path);
+            if (file.lastProjects.Count > 10)
             {
-                lastProjects.Remove(lastProjects.Last());
+				file.lastProjects.Remove(file.lastProjects.Last());
             }
-            Save();
+			QueueSave();
             Events.RecentProjectsUpdated();
         }
 
         public static IReadOnlyList<string> getLastProjects()
         {
-            return lastProjects.AsReadOnly();
+            return file.lastProjects.AsReadOnly();
         }
 
         public static string GetLastProject()
         {
-            if(lastProjects.Count == 0)
+            if(file.lastProjects.Count == 0)
             {
                 return null;
             }
-            return lastProjects[0];
+            return file.lastProjects[0];
         }
 
         private static string appDataPath { get => Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EldanToolkit"); }
         private static string appSettingsPath { get => Path.Join(appDataPath, "AppSettings.xml"); }
 
-        public static void Save()
+        private static bool dirty = false;
+
+        private static void Save()
         {
+            if (!dirty) return;
+
             if (!Directory.Exists(appDataPath))
                 Directory.CreateDirectory(appDataPath);
 
-            XmlDocument doc = new XmlDocument();
-            XmlNode root = doc.CreateElement("ProgramSettings");
-            doc.AppendChild(root);
-            XmlNode set = doc.CreateElement("Settings");
-            root.AppendChild(set);
+			XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
+			using var writer = XmlWriter.Create(appSettingsPath, settings);
+			XmlSerializer serializer = new XmlSerializer(typeof(ProgramSettingsFile));
+			serializer.Serialize(writer, file);
+            dirty = false;
+        }
 
-            XmlNode lpn = doc.CreateElement("LastProjects");
-            root.AppendChild(lpn);
-            foreach (string path in lastProjects)
-            {
-                XmlNode p = doc.CreateElement("Path");
-                p.InnerText = path;
-                lpn.AppendChild(p);
-            }
-
-            doc.Save(appSettingsPath);
+        private static void QueueSave()
+        {
+            dirty = true;
+			Godot.Callable.From(Save).CallDeferred();
         }
 
         public static void Load()
         {
             if (!File.Exists(appSettingsPath))
-                return;
-
-            XmlDocument doc = new XmlDocument();
-            doc.Load(appSettingsPath);
-
-            XmlNode? lpn = doc.SelectSingleNode("/ProgramSettings/LastProjects");
-            if (lpn != null)
             {
-                lastProjects.Clear();
-                foreach (XmlNode p in lpn.ChildNodes)
-                {
-                    lastProjects.Add(p.InnerText);
-                }
+                file = new ProgramSettingsFile();
+				return;
+			}
+
+            try
+            {
+                using var reader = XmlReader.Create(appSettingsPath);
+                XmlSerializer serializer = new XmlSerializer(typeof(ProgramSettingsFile));
+                file = (ProgramSettingsFile)serializer.Deserialize(reader);
+            }
+            catch (Exception ex)
+            {
+                Godot.GD.Print("Could not load program settings.");
+                file = new ProgramSettingsFile();
             }
         }
     }

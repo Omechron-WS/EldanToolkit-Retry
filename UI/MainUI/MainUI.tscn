@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://cn5tbfvqbc17j"]
+[gd_scene load_steps=4 format=3 uid="uid://cn5tbfvqbc17j"]
 
 [ext_resource type="Script" path="res://UI/MainUI/MainUI.cs" id="1_nhw2b"]
 [ext_resource type="PackedScene" uid="uid://d3riqpcp87v8y" path="res://UI/FileExplorer/FileManagerTab.tscn" id="2_e7omo"]
+[ext_resource type="PackedScene" uid="uid://owsv2i4dnygr" path="res://UI/MainUI/ProjectSettingsUI.tscn" id="2_u7aqv"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -11,6 +12,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_nhw2b")
+ProjectSettingsUI = ExtResource("2_u7aqv")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1

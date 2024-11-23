@@ -26,48 +26,37 @@ namespace EldanToolkit.Project
         public string launcherPatchPath { get { return Path.Combine(projectPath, "LauncherPatch"); } }
         public string originalFilesPath { get { return Path.Combine(projectPath, "OriginalFiles"); } }
 
-        [Export(PropertyHint.GlobalDir)]
         public string ArchivePath
         {
             get
             {
-                return archivePath;
-            }
-            set
-            {
-                if (archivePath != value)
-                {
-                    archivePath = value;
-                    if(String.IsNullOrWhiteSpace(value))
-                    {
-                        archivePath = null;
-                    }
-                    if (!Engine.IsEditorHint())
-                    {
-                        ReadArchive();
-                    }
-                }
+                return ProgramSettings.ArchivePath;
             }
         }
 
-        private string archivePath;
         private List<ArchiveFilePair> archiveFiles = new List<ArchiveFilePair>();
         CancellationTokenSource cts = new CancellationTokenSource();
 
-        private void ReadArchive()
+		public override void _Ready()
+		{
+			base._Ready();
+            ReadArchive();
+		}
+
+		private void ReadArchive()
         {
             archiveFiles.Clear();
-            if(archivePath == null) { return; }
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientData"), true, cts.Token));
-            archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "ClientDataEN"), true, cts.Token));
-            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Patch"), false, cts.Token)); // Tells the client which index files to use
-            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "Client64"), false, cts.Token));
-            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/Bootstrap"), false, cts.Token));
-            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/Launcher"), false, cts.Token));
-            //archiveFiles.Add(new ArchiveFilePair(Path.Combine(archivePath, "../Bootstrap/LauncherData"), true, cts.Token)); // Actual launcher files: CSS, HTML, etc.
-        }
+            if(ArchivePath == null) { return; }
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(ArchivePath, "ClientData"), true, cts.Token));
+            archiveFiles.Add(new ArchiveFilePair(Path.Combine(ArchivePath, "ClientDataEN"), true, cts.Token));
+			//archiveFiles.Add(new ArchiveFilePair(Path.Combine(ArchivePath, "Patch"), false, cts.Token)); // Tells the client which index files to use
+			//archiveFiles.Add(new ArchiveFilePair(Path.Combine(ArchivePath, "Client64"), false, cts.Token));
+			//archiveFiles.Add(new ArchiveFilePair(Path.Combine(ArchivePath, "../Bootstrap/Bootstrap"), false, cts.Token));
+			//archiveFiles.Add(new ArchiveFilePair(Path.Combine(ArchivePath, "../Bootstrap/Launcher"), false, cts.Token));
+			//archiveFiles.Add(new ArchiveFilePair(Path.Combine(ArchivePath, "../Bootstrap/LauncherData"), true, cts.Token)); // Actual launcher files: CSS, HTML, etc.
+		}
 
-        public SortedSet<string> GetFilesInFolder(string path)
+		public SortedSet<string> GetFilesInFolder(string path)
         {
             SortedSet<string> files = new SortedSet<string>();
             if (projectFilesPath != null)

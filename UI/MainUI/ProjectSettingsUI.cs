@@ -1,0 +1,85 @@
+using EldanToolkit.Project;
+using Godot;
+using System;
+
+public partial class ProjectSettingsUI : Container
+{
+	TextEdit ArchivePathBox;
+	TextEdit NexusVaultPathBox;
+
+	Button ArchivePathFind;
+	Button NexusVaultPathFind;
+
+	Button SaveButton;
+	Button CancelButton;
+
+	public override void _Ready()
+	{
+		base._Ready();
+		ArchivePathBox = GetNode<TextEdit>("%ArchivePathBox");
+		ArchivePathBox.Text = ProgramSettings.ArchivePath;
+		NexusVaultPathBox = GetNode<TextEdit>("%NexusVaultPathBox");
+		NexusVaultPathBox.Text = ProgramSettings.NexusVaultPath;
+
+		ArchivePathFind = GetNode<Button>("%ArchivePathFind");
+		ArchivePathFind.Pressed += FindArchivePath;
+		NexusVaultPathFind = GetNode<Button>("%NexusVaultPathFind");
+		NexusVaultPathFind.Pressed += FindNexusVaultPath;
+
+		SaveButton = GetNode<Button>("%ProjectSettingsSave");
+		SaveButton.Pressed += SaveSettings;
+		CancelButton = GetNode<Button>("%ProjectSettingsCancel");
+		CancelButton.Pressed += Close;
+	}
+
+	public override void _GuiInput(InputEvent @event)
+	{
+		base._GuiInput(@event);
+		if(@event is InputEventMouseButton)
+		{
+			Close();
+		}
+	}
+
+	public void FindArchivePath()
+	{
+		string path = FindPath(String.IsNullOrEmpty(ArchivePathBox.Text) ? ArchivePathBox.Text : ProgramSettings.ArchivePath ?? "C:/");
+		if (path != null)
+		{
+			ArchivePathBox.Text = path;
+		}
+	}
+
+	public void FindNexusVaultPath()
+	{
+		string path = FindPath(String.IsNullOrEmpty(NexusVaultPathBox.Text) ? NexusVaultPathBox.Text : ProgramSettings.ArchivePath ?? "C:/");
+		if (path != null)
+		{
+			NexusVaultPathBox.Text = path;
+		}
+	}
+
+	private string FindPath(string defaultPath)
+	{
+		FileDialog fd = new FileDialog();
+		fd.FileMode = FileDialog.FileModeEnum.OpenDir;
+		fd.Access = FileDialog.AccessEnum.Filesystem;
+		fd.UseNativeDialog = true;
+		fd.CurrentDir = defaultPath;
+		fd.Show();
+		return fd.CurrentFile;
+	}
+
+	public void SaveSettings()
+	{
+		ProgramSettings.ArchivePath = ArchivePathBox.Text;
+		ProgramSettings.NexusVaultPath = NexusVaultPathBox.Text;
+		Close();
+	}
+
+	public void Close()
+	{
+		QueueFree();
+		GetParent().RemoveChild(this);
+	}
+}
