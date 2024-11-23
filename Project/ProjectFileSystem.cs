@@ -150,6 +150,20 @@ namespace EldanToolkit.Project
             File.Delete(Path.Combine(projectFilesPath, path));
         }
 
+        public void ConvertFiles()
+        {
+            var files = GetAllProjectFiles(projectFilesPath);
+			var importfiles = files.Where(f => Path.GetExtension(f).ToLowerInvariant() == ".import");
+            GD.Print(".import files:");
+            GD.Print(importfiles.ToArray().Join(",\n"));
+            
+            foreach(var f in importfiles)
+            {
+                string relative = Path.GetRelativePath(projectFilesPath, f).GetBaseName();
+                FileImporter.Import(f, Path.Combine(processedFilesPath, relative));
+            }
+		}
+
         public void CompileProject()
         {
             Directory.CreateDirectory(clientPatchPath); // Make sure this folder exists

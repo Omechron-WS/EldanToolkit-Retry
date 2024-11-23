@@ -101,7 +101,7 @@ namespace EldanToolkit.Project
 
         public void ConvertFiles()
         {
-
+            FileSystem.ConvertFiles();
         }
 
         public void ConvertAndCompile()
