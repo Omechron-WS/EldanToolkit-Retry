@@ -99,8 +99,8 @@ namespace EldanToolkit.Project
 
                 ArchivePath = ArchivePath; // Just to trigger the observable.
             }
-            catch (Exception ex)
-            {
+            catch (Exception)
+			{
                 Godot.GD.Print("Could not load program settings.");
                 file = new ProgramSettingsFile();
             }
