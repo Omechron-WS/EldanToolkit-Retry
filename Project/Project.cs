@@ -43,6 +43,7 @@ namespace EldanToolkit.Project
 
             FileSystem = new ProjectFileSystem();
             FileSystem.projectPath = path;
+            FileSystem.MakeFolders();
             AddChild(FileSystem);
 
             DataSet = new TableDataSet();

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -21,8 +23,11 @@ namespace EldanToolkit.Project
 	}
 
     public static class ProgramSettings
-    {
-		public static string ArchivePath { get { return file.archivePath; } set { file.archivePath = value; QueueSave(); } }
+	{
+		public static string ArchivePath { get { return file.archivePath; } set { file.archivePath = value; _archivePathSubject.OnNext(value); QueueSave(); } }
+		private static readonly BehaviorSubject<string> _archivePathSubject = new BehaviorSubject<string>(null);
+        public static IObservable<string> ArchivePathObservable => _archivePathSubject.AsObservable().Throttle(TimeSpan.FromMilliseconds(500)).DistinctUntilChanged();
+
 		public static string NexusVaultPath { get { return file.nexusVaultPath; } set { file.nexusVaultPath = value; QueueSave(); } }
 		
         private static ProgramSettingsFile file;
@@ -91,6 +96,8 @@ namespace EldanToolkit.Project
                 using var reader = XmlReader.Create(appSettingsPath);
                 XmlSerializer serializer = new XmlSerializer(typeof(ProgramSettingsFile));
                 file = (ProgramSettingsFile)serializer.Deserialize(reader);
+
+                ArchivePath = ArchivePath; // Just to trigger the observable.
             }
             catch (Exception ex)
             {

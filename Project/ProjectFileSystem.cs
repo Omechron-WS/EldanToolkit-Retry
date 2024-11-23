@@ -19,12 +19,15 @@ namespace EldanToolkit.Project
 
         public string projectFilesPath { get { return Path.Combine(projectPath, "ProjectFiles"); } }
         public string processedFilesPath { get { return Path.Combine(projectPath, "ProcessedFiles"); } }
-
-		public string clientOverridePath { get { return Path.Combine(projectPath, "ClientOverride"); } }
         public string clientPatchPath { get { return Path.Combine(projectPath, "ClientPatch"); } }
-        public string launcherOverridePath { get { return Path.Combine(projectPath, "LauncherOverride"); } }
         public string launcherPatchPath { get { return Path.Combine(projectPath, "LauncherPatch"); } }
         public string originalFilesPath { get { return Path.Combine(projectPath, "OriginalFiles"); } }
+
+        public void MakeFolders()
+        {
+            Directory.CreateDirectory(projectFilesPath);
+			Directory.CreateDirectory(originalFilesPath);
+		}
 
         public string ArchivePath
         {
@@ -37,10 +40,18 @@ namespace EldanToolkit.Project
         private List<ArchiveFilePair> archiveFiles = new List<ArchiveFilePair>();
         CancellationTokenSource cts = new CancellationTokenSource();
 
+        private IDisposable ArchivePathSubscription = null;
+
 		public override void _Ready()
 		{
 			base._Ready();
-            ReadArchive();
+			ArchivePathSubscription = ProgramSettings.ArchivePathObservable.Subscribe(path => ReadArchive());
+		}
+
+		public override void _ExitTree()
+		{
+			base._ExitTree();
+            ArchivePathSubscription.Dispose();
 		}
 
 		private void ReadArchive()
@@ -261,7 +272,6 @@ namespace EldanToolkit.Project
 
         public ArchiveFilePair(string index, bool hasArchive, CancellationToken token)
         {
-            ThreadPool.QueueUserWorkItem((o) => GD.Print(""));
             progress = new Progress();
             task = Task.Run(() => FileSystem.Create(progress, index, hasArchive, null, token));
             task.ContinueWith((t) =>
