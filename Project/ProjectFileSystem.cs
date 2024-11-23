@@ -18,8 +18,9 @@ namespace EldanToolkit.Project
         public string projectPath;
 
         public string projectFilesPath { get { return Path.Combine(projectPath, "ProjectFiles"); } }
+        public string processedFilesPath { get { return Path.Combine(projectPath, "ProcessedFiles"); } }
 
-        public string clientOverridePath { get { return Path.Combine(projectPath, "ClientOverride"); } }
+		public string clientOverridePath { get { return Path.Combine(projectPath, "ClientOverride"); } }
         public string clientPatchPath { get { return Path.Combine(projectPath, "ClientPatch"); } }
         public string launcherOverridePath { get { return Path.Combine(projectPath, "LauncherOverride"); } }
         public string launcherPatchPath { get { return Path.Combine(projectPath, "LauncherPatch"); } }
@@ -152,8 +153,10 @@ namespace EldanToolkit.Project
         public void CompileProject()
         {
             Directory.CreateDirectory(clientPatchPath); // Make sure this folder exists
+            Directory.CreateDirectory(processedFilesPath);
 
-            File.Delete(Path.Combine(clientPatchPath, "Patch.index"));
+
+			File.Delete(Path.Combine(clientPatchPath, "Patch.index"));
             File.Copy(Path.Combine(originalFilesPath, "Patch.index"), Path.Combine(clientPatchPath, "Patch.index"));
 
             FileSystem patchIndex = FileSystem.Create(new Progress(), clientPatchPath + "/Patch", false, null, cts.Token).Result;
@@ -187,12 +190,12 @@ namespace EldanToolkit.Project
 
             {
                 // Write index files
-                var files = GetAllProjectFiles(projectFilesPath);
+                var files = GetAllProjectFiles(processedFilesPath);
                 int num = 1;
                 foreach (var file in files)
                 {
                     GD.Print($"Processing file #{num}: {file}");
-                    string relativePath = Path.GetRelativePath(projectFilesPath, file).Replace('\\', '/');
+                    string relativePath = Path.GetRelativePath(processedFilesPath, file).Replace('\\', '/');
                     ArchiveFilePair target = null;
                     foreach (var archive in archives)
                     {
