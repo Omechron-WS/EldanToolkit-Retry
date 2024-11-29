@@ -43,7 +43,14 @@ public partial class ProjectSettingsUI : Container
 
 	public void FindArchivePath()
 	{
-		string path = FindPath(String.IsNullOrEmpty(ArchivePathBox.Text) ? ArchivePathBox.Text : ProgramSettings.ArchivePath ?? "C:/");
+		FileDialog fd = new FileDialog();
+		fd.FileMode = FileDialog.FileModeEnum.OpenDir;
+		fd.Access = FileDialog.AccessEnum.Filesystem;
+		fd.UseNativeDialog = true;
+		fd.CurrentDir = String.IsNullOrEmpty(ArchivePathBox.Text) ? ArchivePathBox.Text : ProgramSettings.ArchivePath ?? "C:/";
+		fd.Show();
+		string path = fd.CurrentFile;
+
 		if (path != null)
 		{
 			ArchivePathBox.Text = path;
@@ -52,7 +59,15 @@ public partial class ProjectSettingsUI : Container
 
 	public void FindNexusVaultPath()
 	{
-		string path = FindPath(String.IsNullOrEmpty(NexusVaultPathBox.Text) ? NexusVaultPathBox.Text : ProgramSettings.ArchivePath ?? "C:/");
+		FileDialog fd = new FileDialog();
+		fd.FileMode = FileDialog.FileModeEnum.OpenFile;
+		fd.Access = FileDialog.AccessEnum.Filesystem;
+		fd.AddFilter("*.exe", "NexusVault exe");
+		fd.UseNativeDialog = true;
+		fd.CurrentDir = String.IsNullOrEmpty(NexusVaultPathBox.Text) ? NexusVaultPathBox.Text : ProgramSettings.ArchivePath ?? "C:/";
+		fd.Show();
+		string path = fd.CurrentFile;
+
 		if (path != null)
 		{
 			NexusVaultPathBox.Text = path;

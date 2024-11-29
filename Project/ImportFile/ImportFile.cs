@@ -3,8 +3,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ConstrainedExecution;
-using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -36,9 +34,17 @@ public class ImportFile
 
 	public void Import(string source, string dest)
 	{
+		if(File.Exists(dest))
+		{
+			File.Delete(dest);
+		}
 		if(type == ConvertType.Copy)
 		{
 			File.Copy(source.GetBaseName(), dest); // includes path, excludes .import
+		}
+		else if(convertData != null)
+		{
+			convertData.Import(source, dest);
 		}
 	}
 
@@ -46,7 +52,6 @@ public class ImportFile
 	{
 		[XmlEnum("Copy")]
 		Copy,
-		[XmlEnum("Tex")]
 		PNG2TEX
 	}
 
@@ -71,9 +76,9 @@ public class ImportFile
 }
 
 [XmlType("ConvertData")]
-public class ConvertData
+public abstract class ConvertData
 {
-
+	public abstract void Import(string source, string dest);
 }
 
 [XmlType("PNG2TEX")]
@@ -98,5 +103,15 @@ public class PNG2TEX : ConvertData
 		DXT5,
 	}
 	[XmlAttribute("TexType")]
-	public TexType texType;
+	public TexType texType = TexType.DXT3;
+
+	public override void Import(string source, string dest)
+	{
+		string srcfile = source.GetBaseName();
+		if(srcfile.GetExtension().ToLower() != "tex")
+		{
+			return;
+		}
+		NexusVaultWrapper.DoConvert(srcfile.GetBaseName() + ".png", dest, $"--png2tex-mipmaps {mipmaps}", $"--png2tex-depth {depth}", $"--png2tex-type {texType.ToString()}");
+	}
 }
