@@ -95,6 +95,8 @@ namespace WildStar.TextTable
             Columns.Add(col);
             col.DataType = typeof(string);
 
+            PrimaryKey = new[] { Columns["ID"] };
+
 
             using (FileStream stream = File.OpenRead(path))
             using (var reader = new BinaryReader(stream, Encoding.Unicode))
@@ -134,6 +136,7 @@ namespace WildStar.TextTable
 
                 nextId = MaxID() + 1;
             }
+            BuildIndex();
         }
 
         /// <summary>

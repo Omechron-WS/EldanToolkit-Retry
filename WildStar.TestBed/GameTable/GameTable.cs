@@ -380,9 +380,11 @@ namespace WildStar.GameTable
                 }
 
 
+				PrimaryKey = new[] { Columns["ID"] };
 
-                // records
-                long recordDataOffset = headerSize + header.RecordOffset;
+
+				// records
+				long recordDataOffset = headerSize + header.RecordOffset;
                 for (var i = 0; i < header.RecordCount; i++)
                 {
                     stream.Position = recordDataOffset + header.RecordSize * i;
@@ -438,6 +440,7 @@ namespace WildStar.GameTable
                 // ignore lookup table
 
             }
-        }
+			BuildIndex();
+		}
     }
 }
