@@ -1,5 +1,4 @@
-﻿using EldanToolkit.Libraries.LibNexus.Files;
-using LibNexus.Core;
+﻿using LibNexus.Core;
 using LibNexus.Core.Extensions;
 using System;
 using System.Collections.Generic;
@@ -170,9 +169,7 @@ public class Pack : IDisposable
 
 	public ulong Add(ulong length)
 	{
-		length = length.RoundUpTo(16);
-
-        var virtualPage = AllocateVirtualPage();
+		var virtualPage = AllocateVirtualPage();
 		var physicalPage = AllocatePhysicalPage(length);
 
 		virtualPage.Offset = physicalPage.Position;
@@ -199,9 +196,7 @@ public class Pack : IDisposable
 		if (page >= _header.VirtualPages)
 			return;
 
-		length = length.RoundUpTo(16);
-
-        var virtualPage = _virtualPages[(int)page];
+		var virtualPage = _virtualPages[(int)page];
 		var physicalPage = virtualPage.PhysicalPage;
 
 		if (physicalPage == null)
@@ -272,7 +267,6 @@ public class Pack : IDisposable
 
 	private PackPhysicalPage AllocatePhysicalPage(ulong length)
 	{
-		length = length.RoundUpTo(16);
 		var physicalPage = _physicalPages.Values.FirstOrDefault(
 			physicalPage => physicalPage != VirtualPagesPhysicalPage && physicalPage.VirtualPages.Count == 0
 				&& (physicalPage.Length >= length || physicalPage.Next == null)
@@ -281,7 +275,7 @@ public class Pack : IDisposable
 		if (physicalPage != null)
 			return ResizePhysicalPage(physicalPage, length);
 
-		_stream.Position = (long)_header.Length + PackPhysicalPage.Stride / 2; // The last uint64 is not counted in header.length, apparently.
+		_stream.Position = (long)_header.Length;
 
 		var newPhysicalPage = PackPhysicalPage.Create(_stream, length);
 
@@ -299,20 +293,18 @@ public class Pack : IDisposable
 
 	private PackPhysicalPage ResizePhysicalPage(PackPhysicalPage physicalPage, ulong length)
 	{
-		length = length.RoundUpTo(16);
 		MergeLast(physicalPage);
 		MergeNext(physicalPage);
 
 		if (physicalPage.Length > length + PackPhysicalPage.Stride)
 		{
-			var end = physicalPage.Position + physicalPage.Length;
+			var remaining = physicalPage.Length - length - PackPhysicalPage.Stride;
 
-			physicalPage.Length = length;
+			physicalPage.Length -= remaining + PackPhysicalPage.Stride;
 
 			_stream.Position = (long)(physicalPage.Position + physicalPage.Length + PackPhysicalPage.Stride / 2);
-			_stream.SkipPadding(16, 8);
 
-			var remainingPhysicalPage = PackPhysicalPage.Create(_stream, ((end - (ulong)_stream.Position) / 16) * 16);
+			var remainingPhysicalPage = PackPhysicalPage.Create(_stream, remaining);
 			remainingPhysicalPage.Last = physicalPage;
 			remainingPhysicalPage.Next = physicalPage.Next;
 
@@ -330,10 +322,12 @@ public class Pack : IDisposable
 			return physicalPage;
 
 		if (physicalPage.Next == null)
-        {
-            _header.Length += length - physicalPage.Length;
-            physicalPage.Length = length;
-			
+		{
+			var missing = length - physicalPage.Length;
+
+			_header.Length += missing;
+			physicalPage.Length += missing;
+
 			return physicalPage;
 		}
 
@@ -393,10 +387,8 @@ public class Pack : IDisposable
 
 		_physicalPages.Remove(physicalPage.Position);
 
-		ulong end = physicalPage.Position + physicalPage.Length;
-
-		physicalPage.Position = remove.Position;
-		physicalPage.Length = end - remove.Position;
+		physicalPage.Position -= grow + PackPhysicalPage.Stride;
+		physicalPage.Length += grow + PackPhysicalPage.Stride;
 
 		_physicalPages.Add(physicalPage.Position, physicalPage);
 	}
@@ -417,9 +409,7 @@ public class Pack : IDisposable
 		if (physicalPage.Next != null)
 			physicalPage.Next.Last = physicalPage;
 
-		ulong end = remove.Position + remove.Length;
-
-		physicalPage.Length = end - physicalPage.Position;
+		physicalPage.Length += grow + PackPhysicalPage.Stride;
 	}
 
 	public void Dispose()

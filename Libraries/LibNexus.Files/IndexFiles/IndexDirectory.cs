@@ -55,6 +55,7 @@ public class IndexDirectory
 			stream.Position = startOffset + i * FileStride;
 			var nameOffset = stream.ReadUInt32();
 			var file = new IndexFile(stream);
+			stream.ReadUInt32(); // TODO value on translation archives, LauncherData.archive! no idea yet what it is...
 
 			stream.Position = stringsOffset + nameOffset;
 			var name = stream.ReadString();
@@ -68,23 +69,27 @@ public class IndexDirectory
 		stream.WriteUInt32((uint)Directories.Count);
 		stream.WriteUInt32((uint)Files.Count);
 
-		MemoryStream stringStream = new MemoryStream();
+		var stringsOffset = 0U;
 
 		foreach (var (name, block) in Directories)
-        {
-            stream.WriteUInt32((uint)stringStream.Position);
-            stream.WriteUInt32(block);
-            stringStream.WriteString(name);
-        }
+		{
+			stream.WriteUInt32(stringsOffset);
+			stream.WriteUInt32(block);
+			stringsOffset += (uint)(name.Length + 1);
+		}
 
 		foreach (var (name, file) in Files)
-        {
-            stream.WriteUInt32((uint)stringStream.Position);
-            file.Write(stream);
-            stringStream.WriteString(name);
-        }
+		{
+			stream.WriteUInt32(stringsOffset);
+			file.Write(stream);
+			stringsOffset += (uint)(name.Length + 1);
+		}
 
-		stream.Write(stringStream.ToArray());
+		foreach (var name in Directories.Keys)
+			stream.WriteString(name);
+
+		foreach (var name in Files.Keys)
+			stream.WriteString(name);
 	}
 
 	public static IndexDirectory Create(Stream stream)

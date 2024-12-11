@@ -11,7 +11,6 @@ public class IndexFile
 	public ulong DecompressedSize { get; set; }
 	public ulong CompressedSize { get; set; }
 	public Hash Hash { get; set; }
-	public uint Unk1 { get; set; }
 
 	public IndexFile()
 	{
@@ -24,7 +23,6 @@ public class IndexFile
 		DecompressedSize = stream.ReadUInt64();
 		CompressedSize = stream.ReadUInt64();
 		Hash = new Hash(stream.ReadBytes(Hash.Length));
-		Unk1 = stream.ReadUInt32(); // TODO value on translation archives, LauncherData.archive! no idea yet what it is...
 
 		if ((Flags & ~(IndexFileFlags.Complete | IndexFileFlags.Compressed)) != 0x00)
 			throw new Exception("IndexFile: Invalid flags");
@@ -37,6 +35,5 @@ public class IndexFile
 		stream.WriteUInt64(DecompressedSize);
 		stream.WriteUInt64(CompressedSize);
 		stream.WriteBytes(Hash.Bytes);
-		stream.WriteUInt32(Unk1);
 	}
 }
