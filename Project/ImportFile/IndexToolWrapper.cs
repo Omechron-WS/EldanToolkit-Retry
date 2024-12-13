@@ -8,7 +8,15 @@ using System.Linq;
 
 public class IndexToolWrapper
 {
-	public static bool DoCompile(Dictionary<string, IEnumerable<string>> fileList, string outputPath) // Dictionary of base directories, with lists of relative file paths
+	public static bool DoCompile(string basePath, IEnumerable<string> files, string inputIndex, string outputIndex)
+	{
+		File.Copy(inputIndex, outputIndex, true);
+
+		Dictionary<string, IEnumerable<string>> fileList = new Dictionary<string, IEnumerable<string>> { { basePath, files } };
+		return _DoCompile(fileList, outputIndex);
+	}
+
+	private static bool _DoCompile(Dictionary<string, IEnumerable<string>> fileList, string outputPath) // Dictionary of base directories, with lists of relative file paths
 	{
 		try
 		{
@@ -20,6 +28,7 @@ public class IndexToolWrapper
 				fileListXML.folders = new ITFileFolder[fileList.Keys.Count];
 
 				int i = 0;
+				int total = 0;
 				foreach (var dir in fileList)
 				{
 					ITFileFolder folder = new ITFileFolder();
@@ -27,16 +36,21 @@ public class IndexToolWrapper
 					i++;
 					folder.basePath = dir.Key;
 					folder.files = dir.Value.Select(f => new ITFile { filePath = f }).ToArray();
+					total += folder.files.Length;
+				}
+				if(total <= 0)
+				{
+					return true;
 				}
 
 				fileListXML.Write(xmlPath);
 
-				ProcessStartInfo processStartInfo = new ProcessStartInfo { CreateNoWindow = true, FileName = ProgramSettings.IndexToolPath, UseShellExecute = false };
+				ProcessStartInfo processStartInfo = new ProcessStartInfo { CreateNoWindow = false, FileName = ProgramSettings.IndexToolPath, UseShellExecute = false };
 				processStartInfo.ArgumentList.Add("-inputxml=" + xmlPath);
 				processStartInfo.ArgumentList.Add("-outputfile=" + outputPath);
 				Process proc = Process.Start(processStartInfo);
 
-				if (!proc.WaitForExit(5000))
+				if (!proc.WaitForExit(50000))
 				{
 					proc.Close();
 					return false;

@@ -1,5 +1,7 @@
 ﻿using Godot;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,11 +11,16 @@ using System.Xml.Serialization;
 [XmlRoot("ImportFile")]
 public class ImportFile
 {
+	[XmlIgnore]
+	public string FilePath;
+
 	public static ImportFile Load(string path)
 	{
 		using var reader = XmlReader.Create(path);
 		XmlSerializer serializer = new XmlSerializer(typeof(ImportFile), TypeList());
-		return (ImportFile)serializer.Deserialize(reader);
+		ImportFile file = (ImportFile)serializer.Deserialize(reader);
+		file.FilePath = path;
+		return file;
 	}
 
 	public static void Save(string path, ImportFile file)
@@ -29,23 +36,25 @@ public class ImportFile
 		// use reflection to get all derived types
 		return Assembly.GetExecutingAssembly().GetTypes().Where(
 			t => typeof(ConvertData).IsAssignableFrom(t)).ToArray();
-
 	}
 
-	public void Import(string source, string dest)
+	public bool NeedsConversion(string source, string dest)
 	{
-		if(File.Exists(dest))
-		{
-			File.Delete(dest);
-		}
+		return true;
+	}
+
+	public string[] Import(string dest, bool forceConvert)
+	{
 		if(type == ConvertType.Copy)
 		{
-			File.Copy(source.GetBaseName(), dest); // includes path, excludes .import
+			File.Copy(FilePath, dest, true); // includes path, excludes .import
+			return [dest];
 		}
 		else if(convertData != null)
 		{
-			convertData.Import(source, dest);
+			return convertData.Import(FilePath, dest);
 		}
+		return null;
 	}
 
 	public enum ConvertType
@@ -73,12 +82,24 @@ public class ImportFile
 
 	[XmlElement("ConvertData")]
 	public ConvertData convertData = null;
+
+	public enum TargetArchive
+	{
+		Client64,
+		ClientData,
+		ClientDataDE,
+		ClientDataEN,
+		ClientDataFR
+	}
+
+	[XmlAttribute("Archive")]
+	public TargetArchive targetArchive = TargetArchive.ClientData;
 }
 
 [XmlType("ConvertData")]
 public abstract class ConvertData
 {
-	public abstract void Import(string source, string dest);
+	public abstract string[] Import(string source, string dest);
 }
 
 [XmlType("PNG2TEX")]
@@ -105,13 +126,14 @@ public class PNG2TEX : ConvertData
 	[XmlAttribute("TexType")]
 	public TexType texType = TexType.DXT3;
 
-	public override void Import(string source, string dest)
+	public override string[] Import(string source, string dest)
 	{
 		string srcfile = source.GetBaseName();
 		if(srcfile.GetExtension().ToLower() != "tex")
 		{
-			return;
+			return null;
 		}
 		NexusVaultWrapper.DoConvert(srcfile.GetBaseName() + ".png", dest, $"--png2tex-mipmaps {mipmaps}", $"--png2tex-depth {depth}", $"--png2tex-type {texType.ToString()}");
+		return [dest];
 	}
 }

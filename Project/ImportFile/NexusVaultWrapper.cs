@@ -14,13 +14,14 @@ public static class NexusVaultWrapper
 		{
 			if (!string.IsNullOrEmpty(ProgramSettings.NexusVaultPath))
 			{
-				ProcessStartInfo processStartInfo = new ProcessStartInfo { CreateNoWindow = false, FileName = ProgramSettings.NexusVaultPath, UseShellExecute = false, RedirectStandardInput = true };
+				ProcessStartInfo processStartInfo = new ProcessStartInfo { CreateNoWindow = true, FileName = ProgramSettings.NexusVaultPath, UseShellExecute = false, RedirectStandardInput = true };
 				Process proc = Process.Start(processStartInfo);
 
 				using (StreamWriter w = proc.StandardInput)
 				{
 					string dir = outputFile.GetBaseDir();
 					Directory.CreateDirectory(dir);
+
 					w.WriteLine($"convert {string.Join(' ', options.Append(file))}");
 					Thread.Sleep(4000);
 					w.WriteLine("exit");
@@ -35,6 +36,11 @@ public static class NexusVaultWrapper
 					string outputProbably = Path.Combine(file.GetBaseDir(), outputFile.GetFile());
 					if(File.Exists(outputProbably))
 					{
+						if (File.Exists(outputFile))
+						{
+							File.Delete(outputFile);
+						}
+
 						File.Move(outputProbably, outputFile);
 						return true;
 					}

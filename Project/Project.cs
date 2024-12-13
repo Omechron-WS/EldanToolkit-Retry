@@ -89,7 +89,6 @@ namespace EldanToolkit.Project
 
         public void ConvertAndCompile()
         {
-            ConvertFiles();
             FileSystem.CompileProject();
         }
     }

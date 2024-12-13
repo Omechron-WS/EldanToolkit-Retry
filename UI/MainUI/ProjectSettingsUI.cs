@@ -105,6 +105,7 @@ public partial class ProjectSettingsUI : Window
 	{
 		ProgramSettings.ArchivePath = ArchivePathBox.Text;
 		ProgramSettings.NexusVaultPath = NexusVaultPathBox.Text;
+		ProgramSettings.IndexToolPath = IndexToolPathBox.Text;
 		CloseWindow();
 	}
 

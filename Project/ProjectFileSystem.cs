@@ -1,6 +1,7 @@
 ﻿using Godot;
 using LibNexus.Core;
 using LibNexus.Files;
+using LibNexus.Files.IndexFiles;
 using LibNexus.Files.ModelFiles;
 using System;
 using System.Collections.Generic;
@@ -160,11 +161,50 @@ namespace EldanToolkit.Project
             foreach(var f in importfiles)
             {
                 string relative = Path.GetRelativePath(projectFilesPath, f).GetBaseName();
-                FileImporter.Import(f, Path.Combine(processedFilesPath, relative));
+                ImportFile.Load(f).Import(Path.Combine(processedFilesPath, relative), false);
             }
 		}
 
         public void CompileProject()
+		{
+			Directory.CreateDirectory(clientPatchPath); // Make sure this folder exists
+			Directory.CreateDirectory(processedFilesPath);
+
+            var files = Directory.EnumerateFiles(projectFilesPath, "*.import", SearchOption.AllDirectories).Select(f => (f, ImportFile.Load(f))).ToArray();
+
+            string[] archives = {
+                "Client64",
+                "ClientData",
+                "ClientDataDE",
+                "ClientDataEN",
+                "ClientDataFR"
+            };
+
+            var archivePaths = archives.Select(file => (file, dest: Path.Combine(clientPatchPath, file + ".index"), src: Path.Combine(originalFilesPath, file + ".index"))).ToArray();
+            archivePaths = archivePaths.Where(f => File.Exists(f.src)).ToArray();
+
+            foreach (var archive in archivePaths)
+            {
+                if (File.Exists(archive.src))
+				{
+                    var subset = files.Where(f => string.Equals(f.Item2.targetArchive.ToString(), archive.file, StringComparison.InvariantCultureIgnoreCase)).ToArray();
+					CompileArchive(subset, archive.src, archive.dest);
+                }
+            }
+
+            IndexToolWrapper.DoCompile(clientPatchPath, archivePaths.Select(f => f.file + ".index"), Path.Combine(originalFilesPath, "Patch.index"), Path.Combine(clientPatchPath, "Patch.index"));
+		}
+
+        public void CompileArchive(IEnumerable<(string, ImportFile)> files, string inputIndex, string outputIndex)
+        {
+            if (!files.Any()) return;
+            var pathFixed = files.Select(f => (Path.Combine(processedFilesPath, Path.GetRelativePath(projectFilesPath, f.Item1.GetBaseName())), f.Item2)).ToArray();
+
+			var converted = pathFixed.SelectMany(f => f.Item2.Import(f.Item1, false)).ToArray();
+            IndexToolWrapper.DoCompile(processedFilesPath, converted.Select(f => Path.GetRelativePath(processedFilesPath, f)), inputIndex, outputIndex);
+        }
+
+        public void CompileProject_()
         {
             Directory.CreateDirectory(clientPatchPath); // Make sure this folder exists
             Directory.CreateDirectory(processedFilesPath);
