@@ -127,6 +127,19 @@ namespace EldanToolkit.Project
             return false;
         }
 
+        public byte[] ReadArchiveFile(string path)
+		{
+            foreach (var a in archiveFiles)
+            {
+				byte[] file = a.GetFileSystem().Read(path);
+                if(file != null)
+                {
+                    return file;
+                }
+			}
+            return null;
+		}
+
         public void AddtoProject(string path, bool forceLoad = false)
         {
             foreach(var a in archiveFiles)
@@ -196,9 +209,11 @@ namespace EldanToolkit.Project
 		}
 
         public void CompileArchive(IEnumerable<(string, ImportFile)> files, string inputIndex, string outputIndex)
-        {
-            if (!files.Any()) return;
-            var pathFixed = files.Select(f => (Path.Combine(processedFilesPath, Path.GetRelativePath(projectFilesPath, f.Item1.GetBaseName())), f.Item2)).ToArray();
+		{
+			File.Copy(inputIndex, outputIndex, true);
+
+			if (!files.Any()) return;
+			var pathFixed = files.Select(f => (Path.Combine(processedFilesPath, Path.GetRelativePath(projectFilesPath, f.Item1.GetBaseName())), f.Item2)).ToArray();
 
 			var converted = pathFixed.SelectMany(f => f.Item2.Import(f.Item1, false)).ToArray();
             IndexToolWrapper.DoCompile(processedFilesPath, converted.Select(f => Path.GetRelativePath(processedFilesPath, f)), inputIndex, outputIndex);

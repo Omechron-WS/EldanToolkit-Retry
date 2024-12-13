@@ -1,7 +1,5 @@
 ﻿using Godot;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -61,7 +59,8 @@ public class ImportFile
 	{
 		[XmlEnum("Copy")]
 		Copy,
-		PNG2TEX
+		PNG2TEX,
+		GameTable
 	}
 
 	public void FixConvertData()
@@ -73,6 +72,9 @@ public class ImportFile
 				break;
 			case ConvertType.PNG2TEX:
 				convertData = convertData as PNG2TEX ?? new PNG2TEX();
+				break;
+			case ConvertType.GameTable:
+				convertData = convertData as GameTableData ?? new GameTableData();
 				break;
 		}
 	}
@@ -135,5 +137,23 @@ public class PNG2TEX : ConvertData
 		}
 		NexusVaultWrapper.DoConvert(srcfile.GetBaseName() + ".png", dest, $"--png2tex-mipmaps {mipmaps}", $"--png2tex-depth {depth}", $"--png2tex-type {texType.ToString()}");
 		return [dest];
+	}
+}
+
+[XmlType("GameTable")]
+public class GameTableData : ConvertData
+{
+	public override string[] Import(string source, string dest)
+	{
+		string DBPath = Path.GetDirectoryName(source);
+		string destPath = Path.GetDirectoryName(dest);
+		Directory.CreateDirectory(destPath);
+		var files = Directory.GetFiles(DBPath, "*.tbl", SearchOption.TopDirectoryOnly);
+		var filePaths = files.Select(f => (src: f, dest: Path.Combine(destPath, Path.GetFileName(f)))).ToArray();
+		foreach (var file in filePaths)
+		{
+			File.Copy(file.src, file.dest, true);
+		}
+		return filePaths.Select(f => f.dest).ToArray();
 	}
 }

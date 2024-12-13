@@ -10,8 +10,6 @@ public class IndexToolWrapper
 {
 	public static bool DoCompile(string basePath, IEnumerable<string> files, string inputIndex, string outputIndex)
 	{
-		File.Copy(inputIndex, outputIndex, true);
-
 		Dictionary<string, IEnumerable<string>> fileList = new Dictionary<string, IEnumerable<string>> { { basePath, files } };
 		return _DoCompile(fileList, outputIndex);
 	}
@@ -22,7 +20,8 @@ public class IndexToolWrapper
 		{
 			if (!string.IsNullOrEmpty(ProgramSettings.IndexToolPath))
 			{
-				string xmlPath = Path.GetTempFileName(); // Creates empty temp file and gives path to it.
+				//string xmlPath = Path.GetTempFileName(); // Creates empty temp file and gives path to it.
+				string xmlPath = Path.Combine(ProjectHolder.project.FileSystem.processedFilesPath, Path.GetFileNameWithoutExtension(outputPath) + ".xml");
 				IndexToolXML fileListXML = new IndexToolXML();
 
 				fileListXML.folders = new ITFileFolder[fileList.Keys.Count];
