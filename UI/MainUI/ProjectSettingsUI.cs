@@ -35,9 +35,9 @@ public partial class ProjectSettingsUI : Window
 		SaveButton = GetNode<Button>("%ProjectSettingsSave");
 		SaveButton.Pressed += SaveSettings;
 		CancelButton = GetNode<Button>("%ProjectSettingsCancel");
-		CancelButton.Pressed += Close;
+		CancelButton.Pressed += CloseWindow;
 
-		CloseRequested += Close;
+		CloseRequested += CloseWindow;
 	}
 
 	public void FindArchivePath()
@@ -105,12 +105,11 @@ public partial class ProjectSettingsUI : Window
 	{
 		ProgramSettings.ArchivePath = ArchivePathBox.Text;
 		ProgramSettings.NexusVaultPath = NexusVaultPathBox.Text;
-		Close();
+		CloseWindow();
 	}
 
-	public void Close()
+	public void CloseWindow()
 	{
-		GetParent().RemoveChild(this);
 		QueueFree();
 	}
 }
