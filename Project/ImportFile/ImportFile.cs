@@ -45,7 +45,7 @@ public class ImportFile
 	{
 		if(type == ConvertType.Copy)
 		{
-			File.Copy(FilePath, dest, true); // includes path, excludes .import
+			File.Copy(FilePath.GetBaseName(), dest, true); // includes path, excludes .import
 			return [dest];
 		}
 		else if(convertData != null)
