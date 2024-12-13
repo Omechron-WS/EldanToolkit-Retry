@@ -79,9 +79,11 @@ public partial class ETMenuBar : MenuBar
 		FileMenu.AddItem("Program Settings");
 		FileMenuCallbacks.Add(() =>
 		{
-			Control settingsUI = ProjectSettingsUIScene.Instantiate<Control>();
+			Window settingsUI = ProjectSettingsUIScene.Instantiate<Window>();
+			settingsUI.Visible = false;
+			settingsUI.ForceNative = true;
 			GetTree().Root.AddChild(settingsUI);
-			settingsUI.MoveToFront();
+			settingsUI.Show();
 		});
 
 		/*if (FileMenu != null && RecentProjects != null)

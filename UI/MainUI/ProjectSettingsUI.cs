@@ -2,7 +2,7 @@ using EldanToolkit.Project;
 using Godot;
 using System;
 
-public partial class ProjectSettingsUI : Container
+public partial class ProjectSettingsUI : Window
 {
 	TextEdit ArchivePathBox;
 	TextEdit NexusVaultPathBox;
@@ -36,15 +36,8 @@ public partial class ProjectSettingsUI : Container
 		SaveButton.Pressed += SaveSettings;
 		CancelButton = GetNode<Button>("%ProjectSettingsCancel");
 		CancelButton.Pressed += Close;
-	}
 
-	public override void _GuiInput(InputEvent @event)
-	{
-		base._GuiInput(@event);
-		if(@event is InputEventMouseButton)
-		{
-			Close();
-		}
+		CloseRequested += Close;
 	}
 
 	public void FindArchivePath()
@@ -117,7 +110,7 @@ public partial class ProjectSettingsUI : Container
 
 	public void Close()
 	{
-		QueueFree();
 		GetParent().RemoveChild(this);
+		QueueFree();
 	}
 }
