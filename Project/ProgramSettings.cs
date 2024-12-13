@@ -20,6 +20,8 @@ namespace EldanToolkit.Project
         public string archivePath { get; set; }
 		[XmlAttribute("NexusVaultPath")]
 		public string nexusVaultPath { get; set; }
+		[XmlAttribute("IndexToolPath")]
+		public string indexToolPath { get; set; }
 	}
 
     public static class ProgramSettings
@@ -29,8 +31,10 @@ namespace EldanToolkit.Project
         public static IObservable<string> ArchivePathObservable => _archivePathSubject.AsObservable().Throttle(TimeSpan.FromMilliseconds(500)).DistinctUntilChanged();
 
 		public static string NexusVaultPath { get { return file.nexusVaultPath; } set { file.nexusVaultPath = value; QueueSave(); } }
-		
-        private static ProgramSettingsFile file;
+
+		public static string IndexToolPath { get { return file.indexToolPath; } set { file.indexToolPath = value; QueueSave(); } }
+
+		private static ProgramSettingsFile file;
 
         public static void NoteProjectLoaded(string path)
         {

@@ -32,11 +32,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MenuBar" type="MenuBar" parent="Panel/VBoxContainer" node_paths=PackedStringArray("ParentUI")]
+[node name="MenuBar" type="MenuBar" parent="Panel/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("3_n3lp2")
-ParentUI = NodePath("../../..")
 ProjectSettingsUIScene = ExtResource("2_u7aqv")
 DecorColorShiftWizard = ExtResource("4_h24nm")
 

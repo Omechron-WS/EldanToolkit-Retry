@@ -169,7 +169,6 @@ namespace EldanToolkit.Project
             Directory.CreateDirectory(clientPatchPath); // Make sure this folder exists
             Directory.CreateDirectory(processedFilesPath);
 
-
 			File.Delete(Path.Combine(clientPatchPath, "Patch.index"));
             File.Copy(Path.Combine(originalFilesPath, "Patch.index"), Path.Combine(clientPatchPath, "Patch.index"));
 

@@ -42,7 +42,7 @@ text = "Archive Path:"
 
 [node name="ArchivePathBox" type="TextEdit" parent="PanelContainer/MarginContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 40)
+custom_minimum_size = Vector2(600, 40)
 layout_mode = 2
 
 [node name="ArchivePathFind" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/GridContainer"]
@@ -56,10 +56,24 @@ text = "NexusVault Path:"
 
 [node name="NexusVaultPathBox" type="TextEdit" parent="PanelContainer/MarginContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 40)
+custom_minimum_size = Vector2(600, 40)
 layout_mode = 2
 
 [node name="NexusVaultPathFind" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+icon = ExtResource("2_xwkvs")
+
+[node name="IndexToolPathLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Index Tool Path:"
+
+[node name="IndexToolPathBox" type="TextEdit" parent="PanelContainer/MarginContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(600, 40)
+layout_mode = 2
+
+[node name="IndexToolPathFind" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 icon = ExtResource("2_xwkvs")

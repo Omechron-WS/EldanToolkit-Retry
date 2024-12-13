@@ -6,9 +6,11 @@ public partial class ProjectSettingsUI : Container
 {
 	TextEdit ArchivePathBox;
 	TextEdit NexusVaultPathBox;
+	TextEdit IndexToolPathBox;
 
 	Button ArchivePathFind;
 	Button NexusVaultPathFind;
+	Button IndexToolPathFind;
 
 	Button SaveButton;
 	Button CancelButton;
@@ -20,11 +22,15 @@ public partial class ProjectSettingsUI : Container
 		ArchivePathBox.Text = ProgramSettings.ArchivePath;
 		NexusVaultPathBox = GetNode<TextEdit>("%NexusVaultPathBox");
 		NexusVaultPathBox.Text = ProgramSettings.NexusVaultPath;
+		IndexToolPathBox = GetNode<TextEdit>("%IndexToolPathBox");
+		IndexToolPathBox.Text = ProgramSettings.IndexToolPath;
 
 		ArchivePathFind = GetNode<Button>("%ArchivePathFind");
 		ArchivePathFind.Pressed += FindArchivePath;
 		NexusVaultPathFind = GetNode<Button>("%NexusVaultPathFind");
 		NexusVaultPathFind.Pressed += FindNexusVaultPath;
+		IndexToolPathFind = GetNode<Button>("%IndexToolPathFind");
+		IndexToolPathFind.Pressed += FindIndexToolPath;
 
 		SaveButton = GetNode<Button>("%ProjectSettingsSave");
 		SaveButton.Pressed += SaveSettings;
@@ -64,13 +70,30 @@ public partial class ProjectSettingsUI : Container
 		fd.Access = FileDialog.AccessEnum.Filesystem;
 		fd.AddFilter("*.exe", "NexusVault exe");
 		fd.UseNativeDialog = true;
-		fd.CurrentDir = String.IsNullOrEmpty(NexusVaultPathBox.Text) ? NexusVaultPathBox.Text : ProgramSettings.ArchivePath ?? "C:/";
+		fd.CurrentDir = String.IsNullOrEmpty(NexusVaultPathBox.Text) ? NexusVaultPathBox.Text : ProgramSettings.NexusVaultPath ?? "C:/";
 		fd.Show();
 		string path = fd.CurrentFile;
 
 		if (path != null)
 		{
 			NexusVaultPathBox.Text = path;
+		}
+	}
+
+	public void FindIndexToolPath()
+	{
+		FileDialog fd = new FileDialog();
+		fd.FileMode = FileDialog.FileModeEnum.OpenFile;
+		fd.Access = FileDialog.AccessEnum.Filesystem;
+		fd.AddFilter("*.exe", "Index tool exe");
+		fd.UseNativeDialog = true;
+		fd.CurrentDir = String.IsNullOrEmpty(IndexToolPathBox.Text) ? IndexToolPathBox.Text : ProgramSettings.IndexToolPath ?? "C:/";
+		fd.Show();
+		string path = fd.CurrentFile;
+
+		if (path != null)
+		{
+			IndexToolPathBox.Text = path;
 		}
 	}
 
