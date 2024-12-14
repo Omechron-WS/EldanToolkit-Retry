@@ -45,6 +45,7 @@ public class ImportFile
 	{
 		if(type == ConvertType.Copy)
 		{
+			Directory.CreateDirectory(dest.GetBaseDir());
 			File.Copy(FilePath.GetBaseName(), dest, true); // includes path, excludes .import
 			return [dest];
 		}
